@@ -13,6 +13,7 @@
 *.rbxmx
 aftman.toml
 Build
+TESTING.md
 DevPackages
 Packages
 sourcemap.json
