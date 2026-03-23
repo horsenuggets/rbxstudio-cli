@@ -1,0 +1,25 @@
+[package]
+name = "horsenuggets/rbxstudio-cli"
+description = "A feature-rich CLI for launching Roblox Studio with various configurations."
+version = "0.0.0"
+private = true
+license = "MIT"
+realm = "shared"
+registry = "https://github.com/UpliftGames/wally-index"
+repository = "https://github.com/horsenuggets/rbxstudio-cli"
+include = [
+    "default.project.json",
+    "init.luau",
+    "LICENSE",
+    "README.md",
+    "Source",
+    "Source/**",
+    "wally.toml",
+]
+exclude = ["**"]
+
+[dependencies]
+t = "horsenuggets/t@3.1.1-horse.0.3"
+
+[dev-dependencies]
+Testable = "horsenuggets/testable@0.1.0"
