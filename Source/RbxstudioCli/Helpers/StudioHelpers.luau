@@ -41,9 +41,9 @@ function StudioHelpers.launch(args: { string }?)
         print(`Launching with {table.concat(argParts, " ")}`)
     end
 
-    -- Use "open" to launch Studio detached from the terminal so the CLI
-    -- exits immediately without waiting for Studio to close
-    local openArgs = { studioPath, "--args" }
+    -- Use "open -a" to launch Studio as an app, detached from the terminal,
+    -- so the CLI exits immediately without waiting for Studio to close
+    local openArgs = { "-a", STUDIO_APP_PATH, "--args" }
     for _, arg in studioArgs do
         table.insert(openArgs, arg)
     end
