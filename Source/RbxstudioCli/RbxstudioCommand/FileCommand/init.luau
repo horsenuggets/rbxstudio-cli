@@ -45,8 +45,7 @@ return Commandline.Command.new({
             process.exit(1)
         end
 
-        print(Chalk.bold(Chalk.blueBright("Opening local file...")))
-        print(`File is {Chalk.dim(filePath)}`)
+        print(`Opening "{filePath}"...`)
 
         local studioArgs = { "-task", "EditFile" }
 

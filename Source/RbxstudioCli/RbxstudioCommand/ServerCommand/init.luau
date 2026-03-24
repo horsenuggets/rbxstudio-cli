@@ -47,9 +47,11 @@ return Commandline.Command.new({
         local players = flags.players and flags.players.Value or 0
         local port = flags.port and flags.port.Value or 0
 
-        print(Chalk.bold(Chalk.blueBright(`Starting test server for place {placeId}...`)))
-        print(`Universe ID is {Chalk.dim(universeId)}`)
-        print(`Players is {Chalk.dim(tostring(players))}`)
+        local details = { `place {placeId}`, `universe {universeId}` }
+        if players > 0 then
+            table.insert(details, `{players} {if players == 1 then "player" else "players"}`)
+        end
+        print(`Starting test server for {table.concat(details, ", ")}...`)
 
         local studioArgs = {
             "-task",

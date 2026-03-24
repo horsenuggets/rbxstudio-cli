@@ -64,10 +64,6 @@ function StudioHelpers.launch(args: { string }?)
 
     local studioArgs = args or {}
 
-    if #studioArgs > 0 then
-        print(`Launching with {table.concat(studioArgs, " ")}`)
-    end
-
     if process.os == "macos" then
         -- Launch the binary directly via sh so each invocation gets its
         -- own process with the correct arguments. "open -a" ignores args
@@ -97,7 +93,7 @@ function StudioHelpers.launch(args: { string }?)
         process.exec("sh", shellArgs, { stdio = "none" })
     end
 
-    print(Chalk.bold(Chalk.greenBright("Roblox Studio launched.")))
+    print("Roblox Studio launched.")
 end
 
 return StudioHelpers

@@ -25,17 +25,21 @@ return Commandline.Command.new({
         }),
     },
     Impl = function(_args, flags)
-        print(Chalk.bold(Chalk.blueBright("Opening Roblox Studio...")))
-
+        local details = {}
         local studioArgs = {}
 
         if flags.noplugins and flags.noplugins.Value then
             table.insert(studioArgs, "-disableLoadUserPlugins")
+            table.insert(details, "plugins disabled")
         end
 
         if flags.reset and flags.reset.Value then
             table.insert(studioArgs, "-resetLayout")
+            table.insert(details, "layout reset")
         end
+
+        local suffix = if #details > 0 then ` ({table.concat(details, ", ")})` else ""
+        print(`Opening Roblox Studio{suffix}...`)
 
         StudioHelpers.launch(studioArgs)
     end,

@@ -12,7 +12,7 @@ with process arguments.
 local process = require("@lune/process")
 
 local Commandline = require("@packages/Commandline")
-local RbxstudioCommand = require("@self/RbxstudioCommand")
+local RbxstudioCommand = require("@rbxstudiocli/RbxstudioCommand")
 
 local function rbxstudioCli()
     Commandline.registerCommand(RbxstudioCommand)

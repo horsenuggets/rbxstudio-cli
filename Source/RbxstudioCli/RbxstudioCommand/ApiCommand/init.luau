@@ -26,8 +26,7 @@ return Commandline.Command.new({
     Impl = function(args, _flags)
         local output = args.output
 
-        print(Chalk.bold(Chalk.blueBright("Dumping Luau API...")))
-        print(`Output file is {Chalk.dim(output)}`)
+        print(`Dumping Luau API to "{output}"...`)
 
         StudioHelpers.launch({
             "-API",

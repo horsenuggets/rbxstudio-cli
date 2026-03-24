@@ -59,12 +59,19 @@ return Commandline.Command.new({
 
         local task = if version then "EditPlaceRevision" else "EditPlace"
 
-        print(Chalk.bold(Chalk.blueBright(`Editing place {placeId}...`)))
-        print(`Universe ID is {Chalk.dim(universeId)}`)
-
+        local details = { `place {placeId}`, `universe {universeId}` }
         if version then
-            print(`Version is {Chalk.dim(tostring(version))}`)
+            table.insert(details, `version {version}`)
         end
+        if scriptPath then
+            local scriptDetail = `script "{scriptPath}"`
+            if line then
+                scriptDetail ..= ` line {line}`
+            end
+            table.insert(details, scriptDetail)
+        end
+
+        print(`Editing {table.concat(details, ", ")}...`)
 
         local studioArgs = {
             "-task",
@@ -83,7 +90,6 @@ return Commandline.Command.new({
         if scriptPath then
             table.insert(studioArgs, "-openScriptPath")
             table.insert(studioArgs, scriptPath)
-            print(`Opening script at {Chalk.dim(scriptPath)}`)
         end
 
         if line then

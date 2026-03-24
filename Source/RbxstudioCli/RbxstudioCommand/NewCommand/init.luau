@@ -34,7 +34,7 @@ return Commandline.Command.new({
     Impl = function(args, flags)
         local name = args.name
 
-        print(Chalk.bold(Chalk.blueBright(`Creating new place "{name}"...`)))
+        print(`Creating new place "{name}"...`)
 
         local placePath = ProjectHelpers.createTempPlace(name)
 

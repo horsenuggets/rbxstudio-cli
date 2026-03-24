@@ -77,7 +77,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
     project.name = placeName
 
     fs.writeFile(projectPath, serde.encode("json", project, true))
-    print(`Created project file at {Chalk.dim(projectPath)}`)
+    print(`Created project file at "{projectPath}".`)
 
     -- Build the place file with Rojo
     local result = process.exec("rojo", {
@@ -93,7 +93,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
         process.exit(1)
     end
 
-    print(`Built place file at {Chalk.dim(outputPath)}`)
+    print(`Built place file at "{outputPath}".`)
     return outputPath
 end
 
