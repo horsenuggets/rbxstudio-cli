@@ -4,8 +4,8 @@
 
 BuildExecutable
 
-Compiles the rbxstudio CLI to a standalone executable. Embeds the VERSION at
-build time since compiled executables cannot read files at runtime.
+Compiles the rbxstudio CLI to a standalone executable. Embeds the VERSION
+at build time since compiled executables cannot read files at runtime.
 
 --]]
 
@@ -21,140 +21,11 @@ local ENTRY_POINT = `{PROJECT_ROOT}/Source/RbxstudioCli`
 local GENERATE_VERSION_SCRIPT = `{PROJECT_ROOT}/Scripts/GenerateVersion.luau`
 local OUTPUT_NAME = "rbxstudio"
 
-local ALIAS_DIRS = {
-    { alias = "@packages", dir = "Packages" },
-    { alias = "@rbxstudiocli", dir = "Source/RbxstudioCli" },
-    { alias = "@tests", dir = "Tests" },
-}
-
-local function run(command: string, args: { string }, options: { cwd: string? }?): (boolean, string)
-    local result = process.exec(command, args, options)
-    if result.ok then
-        return true, result.stdout
-    else
-        return false, result.stderr
-    end
-end
-
-local function getParentDir(path: string): string
-    return path:match("^(.*)/[^/]+$") or ""
-end
-
-local function resolveAlias(projectRelPath: string): (string?, string?)
-    for _, entry in ALIAS_DIRS do
-        local prefix = entry.dir .. "/"
-        if projectRelPath:sub(1, #prefix) == prefix then
-            local rest = projectRelPath:sub(#prefix + 1)
-            return entry.alias, rest
-        end
-    end
-    return nil
-end
-
-type FileBackup = { path: string, content: string }
-
-local function patchRelativeRequires(): { FileBackup }
-    local backups: { FileBackup } = {}
-    local patched = 0
-
-    local function processFile(filePath: string, projectRelPath: string)
-        local content = fs.readFile(filePath)
-        local originalContent = content
-        local modified = false
-        local fileName = filePath:match("([^/]+)$") or ""
-        local fileDir = getParentDir(projectRelPath)
-
-        -- Replace @self requires (used in init.luau files)
-        if content:find("@self/", 1, true) then
-            local selfDir = fileDir
-            local newContent = content:gsub('require%("@self/([^"]+)"', function(target)
-                local fullPath = if selfDir == "" then target else `{selfDir}/{target}`
-                local alias, rest = resolveAlias(fullPath)
-                if alias then
-                    modified = true
-                    return `require("{alias}/{rest}"`
-                end
-                return nil
-            end)
-            content = newContent
-        end
-
-        -- Replace "./" relative requires
-        if content:find('require("./', 1, true) then
-            local newContent = content:gsub('require%("(%./[^"]+)"', function(relTarget)
-                local target = relTarget:sub(3)
-                local fullPath = if fileDir == "" then target else `{fileDir}/{target}`
-                local alias, rest = resolveAlias(fullPath)
-                if alias then
-                    modified = true
-                    return `require("{alias}/{rest}"`
-                end
-                return nil
-            end)
-            content = newContent
-        end
-
-        -- Replace "../" relative requires
-        if content:find('require("../', 1, true) then
-            local newContent = content:gsub('require%("(%.%./[^"]+)"', function(relTarget)
-                local target = relTarget:sub(4)
-                local parentDir = getParentDir(fileDir)
-                local fullPath = if parentDir == "" then target else `{parentDir}/{target}`
-                local alias, rest = resolveAlias(fullPath)
-                if alias then
-                    modified = true
-                    return `require("{alias}/{rest}"`
-                end
-                return nil
-            end)
-            content = newContent
-        end
-
-        if modified then
-            table.insert(backups, { path = filePath, content = originalContent })
-            fs.writeFile(filePath, content)
-            patched += 1
-        end
-    end
-
-    local function processDir(dirPath: string, projectRelPrefix: string)
-        for _, entry in fs.readDir(dirPath) do
-            local fullPath = `{dirPath}/{entry}`
-            local relPath = if projectRelPrefix == "" then entry else `{projectRelPrefix}/{entry}`
-
-            if fs.isDir(fullPath) then
-                processDir(fullPath, relPath)
-            elseif entry:match("%.luau$") then
-                processFile(fullPath, relPath)
-            end
-        end
-    end
-
-    for _, entry in ALIAS_DIRS do
-        local dirPath = `{PROJECT_ROOT}/{entry.dir}`
-        if fs.isDir(dirPath) then
-            processDir(dirPath, entry.dir)
-        end
-    end
-
-    if patched > 0 then
-        print(`Patched {patched} {if patched == 1 then "file" else "files"} for cross-platform compatibility.`)
-    end
-
-    return backups
-end
-
-local function restoreFiles(backups: { FileBackup })
-    for _, backup in backups do
-        fs.writeFile(backup.path, backup.content)
-    end
-end
-
 local function buildExecutable()
     local target = process.args[1]
 
     print()
-    print(`Building {Chalk.bold(Chalk.blueBright("rbxstudio"))} executable...`)
+    print(`Building {Chalk.bold(Chalk.blueBright(OUTPUT_NAME))} executable...`)
 
     -- Generate version module (run from project root so rokit shim finds
     -- manifest)
@@ -169,8 +40,6 @@ local function buildExecutable()
         print(Chalk.red(`Entry point "{ENTRY_POINT}" not found.`))
         process.exit(1)
     end
-
-    local backups = patchRelativeRequires()
 
     if not fs.isDir(BUILD_DIR) then
         fs.writeDir(BUILD_DIR)
@@ -197,12 +66,9 @@ local function buildExecutable()
 
     print(`Entry point is {Chalk.dim(ENTRY_POINT)}.`)
 
-    local ok, output = run("lune", args, { cwd = PROJECT_ROOT })
+    local result = process.exec("lune", args, { cwd = PROJECT_ROOT })
 
-    -- Restore patched files (including shebang-stripped init.luau)
-    restoreFiles(backups)
-
-    if ok then
+    if result.ok then
         local outputFile = outputPath
         if target and target:find("windows") then
             outputFile = `{outputPath}.exe`
@@ -218,7 +84,7 @@ local function buildExecutable()
         print(Chalk.bold(Chalk.greenBright("Build completed successfully!")))
     else
         print(Chalk.redBright("Build failed."))
-        print(output)
+        print(result.stderr)
         process.exit(1)
     end
 end
