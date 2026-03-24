@@ -74,12 +74,18 @@ function StudioHelpers.launch(args: { string }?)
     end
 
     if process.os == "macos" then
-        -- Use "open -a" to launch as a macOS app, detached from terminal
-        local openArgs = { "-a", STUDIO_PATHS.macos, "--args" }
+        -- Launch the binary directly via sh so each invocation gets its
+        -- own process with the correct arguments. "open -a" ignores args
+        -- when Studio is already running.
+        local studioPath = StudioHelpers.getStudioPath()
+        local quoted = { `"{studioPath}"` }
         for _, arg in studioArgs do
-            table.insert(openArgs, arg)
+            table.insert(quoted, `"{arg}"`)
         end
-        process.exec("open", openArgs, { stdio = "none" })
+        process.exec("sh", {
+            "-c",
+            `{table.concat(quoted, " ")} &>/dev/null &`,
+        }, { stdio = "none" })
     elseif process.os == "windows" then
         -- Use "start" via cmd to launch detached on Windows
         local studioPath = StudioHelpers.getStudioPath()
