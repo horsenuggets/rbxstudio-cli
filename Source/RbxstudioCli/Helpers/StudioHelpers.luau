@@ -41,10 +41,13 @@ function StudioHelpers.launch(args: { string }?)
         print(`Launching with {table.concat(argParts, " ")}`)
     end
 
-    -- Spawn Studio as a detached background process
-    process.exec(studioPath, studioArgs, {
-        stdio = "none",
-    })
+    -- Use "open" to launch Studio detached from the terminal so the CLI
+    -- exits immediately without waiting for Studio to close
+    local openArgs = { studioPath, "--args" }
+    for _, arg in studioArgs do
+        table.insert(openArgs, arg)
+    end
+    process.exec("open", openArgs, { stdio = "none" })
 
     print(Chalk.bold(Chalk.greenBright("Roblox Studio launched.")))
 end
