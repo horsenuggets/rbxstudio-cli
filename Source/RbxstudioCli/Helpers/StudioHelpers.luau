@@ -64,13 +64,8 @@ function StudioHelpers.launch(args: { string }?)
 
     local studioArgs = args or {}
 
-    local argParts = {}
-    for _, arg in studioArgs do
-        table.insert(argParts, Chalk.dim(arg))
-    end
-
-    if #argParts > 0 then
-        print(`Launching with {table.concat(argParts, " ")}`)
+    if #studioArgs > 0 then
+        print(`Launching with {table.concat(studioArgs, " ")}`)
     end
 
     if process.os == "macos" then
