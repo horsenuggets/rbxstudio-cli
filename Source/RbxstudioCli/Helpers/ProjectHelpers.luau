@@ -74,11 +74,15 @@ end
 function ProjectHelpers.createTempPlace(name: string?): string
     assert(t.optional(t.string)(name))
 
-    local hexId = generateHexId()
-    local placeName = if name then `{name}-{hexId}` else `temp-{hexId}`
+    local placeName = name or `temp-{generateHexId()}`
     local tempDir = `{process.env.HOME}/.rbxstudio-cli/temp/{placeName}`
 
-    if not fs.isDir(tempDir) then
+    if fs.isDir(tempDir) then
+        if name then
+            print(Chalk.red(`Place {Chalk.bold(name)} already exists.`))
+            process.exit(1)
+        end
+    else
         fs.writeDir(tempDir)
     end
 
@@ -90,7 +94,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
     project.name = placeName
 
     fs.writeFile(projectPath, serde.encode("json", project, true))
-    print(`Created project at {Chalk.dim(projectPath)}`)
+    print(`Created project at {Chalk.dim(projectPath)}.`)
 
     -- Build the place file with Rojo
     local result = process.exec("rojo", {
@@ -106,7 +110,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
         process.exit(1)
     end
 
-    print(`Built place at {Chalk.dim(outputPath)}`)
+    print(`Built place at {Chalk.dim(outputPath)}.`)
     return outputPath
 end
 
