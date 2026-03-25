@@ -93,7 +93,7 @@ function StudioHelpers.launch(args: { string }?)
         process.exec("sh", shellArgs, { stdio = "none" })
     end
 
-    print("Roblox Studio launched.")
+    print(Chalk.greenBright("Roblox Studio launched."))
 end
 
 return StudioHelpers

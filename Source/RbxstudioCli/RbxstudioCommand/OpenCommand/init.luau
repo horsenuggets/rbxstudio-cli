@@ -38,7 +38,7 @@ return Commandline.Command.new({
             table.insert(details, "layout reset")
         end
 
-        local suffix = if #details > 0 then ` ({table.concat(details, ", ")})` else ""
+        local suffix = if #details > 0 then ` ({Chalk.dim(table.concat(details, ", "))})` else ""
         print(`Opening Roblox Studio{suffix}...`)
 
         StudioHelpers.launch(studioArgs)

@@ -47,9 +47,9 @@ return Commandline.Command.new({
         local players = flags.players and flags.players.Value or 0
         local port = flags.port and flags.port.Value or 0
 
-        local details = { `place {placeId}`, `universe {universeId}` }
+        local details = { `place {Chalk.dim(placeId)}`, `universe {Chalk.dim(universeId)}` }
         if players > 0 then
-            table.insert(details, `{players} {if players == 1 then "player" else "players"}`)
+            table.insert(details, `{Chalk.dim(tostring(players))} {if players == 1 then "player" else "players"}`)
         end
         print(`Starting test server for {table.concat(details, ", ")}...`)
 

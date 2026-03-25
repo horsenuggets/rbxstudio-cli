@@ -26,7 +26,7 @@ return Commandline.Command.new({
     Impl = function(args, _flags)
         local output = args.output
 
-        print(`Dumping Luau API to "{output}"...`)
+        print(`Dumping Luau API to {Chalk.dim(output)}...`)
 
         StudioHelpers.launch({
             "-API",

@@ -59,14 +59,14 @@ return Commandline.Command.new({
 
         local task = if version then "EditPlaceRevision" else "EditPlace"
 
-        local details = { `place {placeId}`, `universe {universeId}` }
+        local details = { `place {Chalk.dim(placeId)}`, `universe {Chalk.dim(universeId)}` }
         if version then
-            table.insert(details, `version {version}`)
+            table.insert(details, `version {Chalk.dim(tostring(version))}`)
         end
         if scriptPath then
-            local scriptDetail = `script "{scriptPath}"`
+            local scriptDetail = `script {Chalk.dim(scriptPath)}`
             if line then
-                scriptDetail ..= ` line {line}`
+                scriptDetail ..= ` line {Chalk.dim(tostring(line))}`
             end
             table.insert(details, scriptDetail)
         end

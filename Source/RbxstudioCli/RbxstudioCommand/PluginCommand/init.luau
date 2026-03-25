@@ -23,7 +23,7 @@ return Commandline.Command.new({
     Impl = function(args, _flags)
         local pluginId = args.pluginid
 
-        print(`Installing plugin {pluginId}...`)
+        print(`Installing plugin {Chalk.dim(pluginId)}...`)
 
         StudioHelpers.launch({
             "-task",

@@ -3,8 +3,8 @@
 ProjectHelpers
 
 Utilities for creating temporary Roblox place files using Rojo. Handles
-generating minimal project JSON files and building them into .rbxl files that
-Studio can open.
+generating minimal project JSON files and building them into .rbxl files
+that Studio can open.
 
 --]]
 
@@ -28,6 +28,9 @@ local TEMPLATE_PROJECT = {
         },
         Lighting = {
             ["$className"] = "Lighting",
+            ["$properties"] = {
+                Technology = "ShadowMap",
+            },
         },
         ReplicatedFirst = {
             ["$className"] = "ReplicatedFirst",
@@ -59,10 +62,20 @@ local TEMPLATE_PROJECT = {
     },
 }
 
+-- Generates a short random hex ID
+local function generateHexId(): string
+    local parts = {}
+    for _ = 1, 4 do
+        table.insert(parts, string.format("%02x", math.random(0, 255)))
+    end
+    return table.concat(parts)
+end
+
 function ProjectHelpers.createTempPlace(name: string?): string
     assert(t.optional(t.string)(name))
 
-    local placeName = name or "rbxstudio-temp"
+    local hexId = generateHexId()
+    local placeName = if name then `{name}-{hexId}` else `temp-{hexId}`
     local tempDir = `{process.env.HOME}/.rbxstudio-cli/temp/{placeName}`
 
     if not fs.isDir(tempDir) then
@@ -77,7 +90,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
     project.name = placeName
 
     fs.writeFile(projectPath, serde.encode("json", project, true))
-    print(`Created project file at "{projectPath}".`)
+    print(`Created project at {Chalk.dim(projectPath)}`)
 
     -- Build the place file with Rojo
     local result = process.exec("rojo", {
@@ -93,7 +106,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
         process.exit(1)
     end
 
-    print(`Built place file at "{outputPath}".`)
+    print(`Built place at {Chalk.dim(outputPath)}`)
     return outputPath
 end
 
