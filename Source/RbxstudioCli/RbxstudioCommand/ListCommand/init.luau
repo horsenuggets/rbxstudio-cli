@@ -378,7 +378,7 @@ return Commandline.Command.new({
 
         local count = tostring(#studios)
         print(
-            `There {if #studios == 1 then "is" else "are"} {Chalk.bold(Chalk.yellow(count))} Roblox Studio {if #studios
+            `There {if #studios == 1 then "is" else "are"} {Chalk.bold(Chalk.yellowBright(count))} Roblox Studio {if #studios
                     == 1
                 then "instance"
                 else "instances"} running.`
