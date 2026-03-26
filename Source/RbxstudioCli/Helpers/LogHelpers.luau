@@ -105,13 +105,13 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
         if filePath then
             local fileName = filePath:match("([^/\\]+)$") or filePath
             return {
-                status = `Editing {fileName}`,
+                status = `Edit ({fileName})`,
                 placeId = nil,
                 highlight = fileName,
             }
         end
         return {
-            status = "Editing local file",
+            status = "Edit (local file)",
             placeId = nil,
             highlight = nil,
         }
@@ -119,30 +119,57 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
 
     if lastTask == "EditPlace" or lastTask == "EditPlaceRevision" then
         -- Check the command line args for the universe ID. If it's 0,
-        -- this is a new unsaved place spawned by Studio (Cmd+N)
-        -- even though it inherits a place ID from the parent process.
+        -- this was originally a new unsaved place (Cmd+N). But the
+        -- user may have since published it or navigated to a
+        -- different place, so also check for later telemetry entries
+        -- with non-zero IDs that appear after the initial startup.
         local cmdLineUniverseId = content:match("%-universeId%s+(%d+)")
+        local cmdLinePlaceId = content:match("%-placeId%s+(%d+)")
         local isNewPlace = cmdLineUniverseId == "0"
 
+        -- Find the last non-zero place/universe IDs from telemetry
         local lastPlaceId = nil
-        if not isNewPlace then
-            for pid in content:gmatch("placeid: (%d+)") do
-                if pid ~= "0" then
-                    lastPlaceId = pid
-                end
+        local lastUniverseId = nil
+        for pid in content:gmatch("placeid: (%d+)") do
+            if pid ~= "0" then
+                lastPlaceId = pid
             end
+        end
+        for uid in content:gmatch("universeid: (%d+)") do
+            if uid ~= "0" then
+                lastUniverseId = uid
+            end
+        end
+
+        if isNewPlace then
+            -- If the last telemetry place ID differs from the
+            -- inherited command line place ID, the user published
+            -- or navigated to a different place
+            if lastPlaceId and lastUniverseId and lastPlaceId ~= cmdLinePlaceId then
+                local name = getPlaceName(lastPlaceId)
+                return {
+                    status = if name then `Edit ({name})` else "Edit",
+                    placeId = lastPlaceId,
+                    highlight = name,
+                }
+            end
+            return {
+                status = "Edit (new place)",
+                placeId = nil,
+                highlight = nil,
+            }
         end
 
         if lastPlaceId then
             local name = getPlaceName(lastPlaceId)
             return {
-                status = if name then `Editing {name}` else "Editing place",
+                status = if name then `Edit ({name})` else "Edit",
                 placeId = lastPlaceId,
                 highlight = name,
             }
         end
         return {
-            status = "Editing new place",
+            status = "Edit",
             placeId = nil,
             highlight = nil,
         }
@@ -150,7 +177,7 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
 
     if lastTask then
         return {
-            status = "Editing new place",
+            status = "Edit (new place)",
             placeId = nil,
             highlight = nil,
         }

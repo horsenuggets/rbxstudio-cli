@@ -33,7 +33,7 @@ Command line:
 Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Editing my-game.rbxl")
+            expect(result.status).to.equal("Edit (my-game.rbxl)")
             expect(result.placeId).to.equal(nil)
             expect(result.highlight).to.equal("my-game.rbxl")
         end)
@@ -43,7 +43,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditFile
 Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Editing local file")
+            expect(result.status).to.equal("Edit (local file)")
             expect(result.placeId).to.equal(nil)
         end)
 
@@ -54,7 +54,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 9430488623
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Editing place")
+            expect(result.status).to.equal("Edit")
             expect(result.placeId).to.equal("9430488623")
         end)
 
@@ -69,7 +69,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
                 end
                 return nil
             end)
-            expect(result.status).to.equal("Editing My Cool Game")
+            expect(result.status).to.equal("Edit (My Cool Game)")
             expect(result.placeId).to.equal("12345")
             expect(result.highlight).to.equal("My Cool Game")
         end)
@@ -80,7 +80,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlaceRevision
 [telemetryLog] placeid: 5555
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Editing place")
+            expect(result.status).to.equal("Edit")
             expect(result.placeId).to.equal("5555")
         end)
 
@@ -116,7 +116,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 0
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Editing place")
+            expect(result.status).to.equal("Edit")
             expect(result.placeId).to.equal(nil)
         end)
 
@@ -150,7 +150,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditFile
 -localPlaceFile /path/to/game.rbxl
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Editing game.rbxl")
+            expect(result.status).to.equal("Edit (game.rbxl)")
         end)
 
         it("should detect Team Create overriding EditFile", function()
@@ -179,7 +179,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 8888
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Editing place")
+            expect(result.status).to.equal("Edit")
             expect(result.placeId).to.equal("8888")
         end)
 
@@ -188,7 +188,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 Info PlaceManager::createAndShowIDEDoc with task NewDocument
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Editing new place")
+            expect(result.status).to.equal("Edit (new place)")
             expect(result.placeId).to.equal(nil)
         end)
 
@@ -208,6 +208,40 @@ Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
             local result = LogHelpers.parseSessionInfo(content)
             expect(result.status).to.equal("Unknown")
+        end)
+
+        it("should detect published place from new place", function()
+            local content = [[
+Command line:
+/Applications/RobloxStudio.app/Contents/MacOS/RobloxStudio -universeId 0 -placeId 95206881 -task EditPlace
+Info PlaceManager::createAndShowIDEDoc with task EditPlace
+[telemetryLog] placeid: 95206881
+[telemetryLog] universeid: 0
+[telemetryLog] placeid: 85939162614693
+[telemetryLog] universeid: 9944635641
+            ]]
+            local result = LogHelpers.parseSessionInfo(content, function(id)
+                if id == "85939162614693" then
+                    return "test game :)"
+                end
+                return nil
+            end)
+            expect(result.status).to.equal("Edit (test game :))")
+            expect(result.placeId).to.equal("85939162614693")
+            expect(result.highlight).to.equal("test game :)")
+        end)
+
+        it("should detect new unsaved place with inherited place ID", function()
+            local content = [[
+Command line:
+/Applications/RobloxStudio.app/Contents/MacOS/RobloxStudio -universeId 0 -placeId 95206881 -task EditPlace
+Info PlaceManager::createAndShowIDEDoc with task EditPlace
+[telemetryLog] placeid: 95206881
+[telemetryLog] universeid: 0
+            ]]
+            local result = LogHelpers.parseSessionInfo(content)
+            expect(result.status).to.equal("Edit (new place)")
+            expect(result.placeId).to.equal(nil)
         end)
     end)
 end

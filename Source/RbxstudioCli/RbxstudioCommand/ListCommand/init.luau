@@ -257,6 +257,11 @@ return Commandline.Command.new({
             return
         end
 
+        -- Sort by process ID
+        table.sort(studios, function(a, b)
+            return tonumber(a.pid) < tonumber(b.pid)
+        end)
+
         -- Gather session info for all processes
         for _, studio in studios do
             studio.session = if studio.logPath
