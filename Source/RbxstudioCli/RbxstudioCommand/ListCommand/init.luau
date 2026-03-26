@@ -256,24 +256,35 @@ local function formatUptime(etime: string): string
         end
     end
 
+    local d_s = Chalk.dim("d")
+    local h_s = Chalk.dim("h")
+    local m_s = Chalk.dim("m")
+    local s_s = Chalk.dim("s")
+
     local parts = {}
+    local rawParts = {}
     if days and days > 0 then
-        table.insert(parts, `{days}d`)
+        table.insert(parts, `{days}{d_s}`)
+        table.insert(rawParts, `{days}d`)
     end
     if hours and hours > 0 then
-        table.insert(parts, `{hours}h`)
+        table.insert(parts, `{hours}{h_s}`)
+        table.insert(rawParts, `{hours}h`)
     end
     if minutes and minutes > 0 then
-        table.insert(parts, `{minutes}m`)
+        table.insert(parts, `{minutes}{m_s}`)
+        table.insert(rawParts, `{minutes}m`)
     end
     if seconds and seconds > 0 then
-        table.insert(parts, `{seconds}s`)
+        table.insert(parts, `{seconds}{s_s}`)
+        table.insert(rawParts, `{seconds}s`)
     end
     if #parts == 0 then
-        table.insert(parts, "0s")
+        table.insert(parts, `0{s_s}`)
+        table.insert(rawParts, "0s")
     end
 
-    return table.concat(parts, " ")
+    return table.concat(parts, " "), table.concat(rawParts, " ")
 end
 
 -- Each row has raw (for width calculation) and colored (for display)
@@ -334,6 +345,7 @@ end
 type StudioProcess = {
     pid: string,
     uptime: string,
+    uptimeRaw: string,
     logPath: string?,
     session: SessionInfo?,
 }
@@ -363,9 +375,11 @@ return Commandline.Command.new({
                 and line:find("RobloxStudio.app/Contents/MacOS/RobloxStudio")
                 and not line:find("RobloxCrashHandler")
             then
+                local coloredUptime, rawUptime = formatUptime(etime)
                 table.insert(studios, {
                     pid = pid,
-                    uptime = formatUptime(etime),
+                    uptime = coloredUptime,
+                    uptimeRaw = rawUptime,
                     logPath = nil,
                     session = nil,
                 })
@@ -418,7 +432,7 @@ return Commandline.Command.new({
             table.insert(rows, {
                 raw = {
                     studio.pid,
-                    studio.uptime,
+                    studio.uptimeRaw,
                     rawPlaceId,
                     session.status,
                 },
