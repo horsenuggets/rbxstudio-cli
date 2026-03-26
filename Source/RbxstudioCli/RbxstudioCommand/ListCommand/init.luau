@@ -23,7 +23,9 @@ local function getLogPath(crashHandlerArgs: string): string?
     return nil
 end
 
--- Determines what Studio is doing based on its log file
+-- Determines what Studio is doing based on its log file. Reads the
+-- log for the latest session state since the user may have switched
+-- places after launch.
 local function getSessionInfo(logPath: string): string
     if not fs.isFile(logPath) then
         return "Unknown"
@@ -31,22 +33,51 @@ local function getSessionInfo(logPath: string): string
 
     local content = fs.readFile(logPath)
 
-    -- Check for local file editing
-    local localFile = content:match("localplacefile.*=.*([^\n]+)") or content:match("Opening local file ([^\n]+)")
-    if localFile then
-        -- Extract just the filename from the path
-        local fileName = localFile:match("([^/\\]+)$") or localFile
-        return `Editing {fileName}`
+    -- Check for Team Create (most specific, check last)
+    local teamCreatePlace = nil
+    for place in content:gmatch("TeamCreateJoinPayload.*place (%d+)") do
+        teamCreatePlace = place
+    end
+    if teamCreatePlace then
+        return `Team Create (place {teamCreatePlace})`
     end
 
-    -- Check for place editing by ID
-    local placeId = content:match("placeid.*=.*(%d+)")
-    if placeId then
-        return `Editing place {placeId}`
+    -- Check for the most recent PlaceManager open action
+    local lastTask = nil
+    for t in content:gmatch("PlaceManager::createAndShowIDEDoc with task (%w+)") do
+        lastTask = t
     end
 
-    -- Check for Start Page
-    if content:find("StartPage") then
+    if lastTask == "EditFile" then
+        -- Find the local file path from the command line (first line
+        -- of the log)
+        local firstLine = content:match("^([^\n]+)")
+        if firstLine then
+            local filePath = firstLine:match("%-localPlaceFile%s+(%S+)")
+            if filePath then
+                local fileName = filePath:match("([^/\\]+)$") or filePath
+                return `Editing {fileName}`
+            end
+        end
+        return "Editing local file"
+    end
+
+    if lastTask == "EditPlace" or lastTask == "EditPlaceRevision" then
+        -- Find the last non-zero placeId from telemetry
+        local lastPlaceId = nil
+        for pid in content:gmatch("placeid: (%d+)") do
+            if pid ~= "0" then
+                lastPlaceId = pid
+            end
+        end
+        if lastPlaceId then
+            return `Editing place {lastPlaceId}`
+        end
+        return "Editing place"
+    end
+
+    -- Check if still on Start Page (no place opened)
+    if not lastTask and content:find("showStartPageWidgets") then
         return "Start Page"
     end
 
