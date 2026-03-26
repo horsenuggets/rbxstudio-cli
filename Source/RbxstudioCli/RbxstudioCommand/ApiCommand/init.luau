@@ -2,8 +2,8 @@
 
 ApiCommand
 
-Dumps the Roblox Luau scripting API as JSON to a specified output file. Useful
-for generating API documentation or tooling.
+Dumps the Roblox Luau scripting API as JSON to a specified output file.
+Launches Roblox Studio briefly to extract the API definitions.
 
 --]]
 
@@ -26,11 +26,11 @@ return Commandline.Command.new({
     Impl = function(args, _flags)
         local output = args.output
 
-        print(`Dumping Luau API to {Chalk.dim(output)}...`)
+        print(`Dumping Luau API to {Chalk.cyanBright(output)}...`)
 
         StudioHelpers.launch({
             "-API",
             output,
-        })
+        }, true)
     end,
 })

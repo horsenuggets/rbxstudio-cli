@@ -81,7 +81,7 @@ return Commandline.Command.new({
 
         local task = if version then "EditPlaceRevision" else "EditPlace"
 
-        local details = { `place {Chalk.dim(placeId)}` }
+        local details = { `place {Chalk.greenBright(placeId)}` }
         if version then
             table.insert(details, `version {Chalk.dim(tostring(version))}`)
         end

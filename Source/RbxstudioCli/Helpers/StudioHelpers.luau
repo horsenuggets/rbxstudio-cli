@@ -113,8 +113,10 @@ local function waitForCooldown()
     end
 end
 
--- Launches Studio as a detached process so the CLI exits immediately
-function StudioHelpers.launch(args: { string }?)
+-- Launches Studio as a detached process so the CLI exits immediately.
+-- Set skipAuth to true for commands that don't need login (like API
+-- dump).
+function StudioHelpers.launch(args: { string }?, skipAuth: boolean?)
     assert(t.optional(t.array(t.string))(args))
 
     local studioArgs = args or {}
@@ -152,7 +154,7 @@ function StudioHelpers.launch(args: { string }?)
     print(Chalk.greenBright("Roblox Studio launched."))
 
     -- Poll Studio logs to verify authentication
-    if process.os == "macos" then
+    if process.os == "macos" and not skipAuth then
         StudioHelpers._waitForAuth()
     end
 end

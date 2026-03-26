@@ -45,7 +45,9 @@ return Commandline.Command.new({
             process.exit(1)
         end
 
-        print(`Opening {Chalk.dim(filePath)}...`)
+        local fileDir = filePath:match("^(.*/)") or ""
+        local fileName = filePath:match("([^/]+)$") or filePath
+        print(`Opening {Chalk.dim(fileDir)}{Chalk.cyanBright(fileName)}...`)
 
         local studioArgs = { "-task", "EditFile" }
 

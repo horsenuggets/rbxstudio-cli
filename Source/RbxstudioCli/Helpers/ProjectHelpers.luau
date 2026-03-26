@@ -94,7 +94,9 @@ function ProjectHelpers.createTempPlace(name: string?): string
     project.name = placeName
 
     fs.writeFile(projectPath, serde.encode("json", project, true))
-    print(`Created project at {Chalk.dim(projectPath)}.`)
+    local projectDir = projectPath:match("^(.*/)") or ""
+    local projectFile = projectPath:match("([^/]+)$") or projectPath
+    print(`Created project at {Chalk.dim(projectDir)}{Chalk.yellow(projectFile)}.`)
 
     -- Build the place file with Rojo
     local result = process.exec("rojo", {
@@ -110,7 +112,9 @@ function ProjectHelpers.createTempPlace(name: string?): string
         process.exit(1)
     end
 
-    print(`Built place at {Chalk.dim(outputPath)}.`)
+    local outputDir = outputPath:match("^(.*/)") or ""
+    local outputFile = outputPath:match("([^/]+)$") or outputPath
+    print(`Built place at {Chalk.dim(outputDir)}{Chalk.cyanBright(outputFile)}.`)
     return outputPath
 end
 
