@@ -16,7 +16,6 @@ local KillCommand = require("@self/KillCommand")
 local ListCommand = require("@self/ListCommand")
 local NewCommand = require("@self/NewCommand")
 local OpenCommand = require("@self/OpenCommand")
-local PluginCommand = require("@self/PluginCommand")
 local ServerCommand = require("@self/ServerCommand")
 local __VERSION__ = require("@self/__VERSION__")
 
@@ -33,7 +32,6 @@ return Commandline.Command.new({
         ListCommand,
         NewCommand,
         OpenCommand,
-        PluginCommand,
         ServerCommand,
     },
 })
