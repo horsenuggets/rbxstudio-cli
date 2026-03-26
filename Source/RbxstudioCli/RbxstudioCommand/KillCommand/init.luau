@@ -46,7 +46,11 @@ return Commandline.Command.new({
             end
 
             process.exec("pkill", { "-9", "-f", "RobloxStudio" }, { stdio = "none" })
-            print(`Killed {Chalk.bold(tostring(count))} Studio {if count == 1 then "process" else "processes"}.`)
+            print(
+                `Killed {Chalk.bold(Chalk.yellowBright(tostring(count)))} Roblox Studio {if count == 1
+                    then "process"
+                    else "processes"}.`
+            )
         else
             -- Verify the PID is a Studio process
             local result = process.exec("ps", { "-p", target, "-o", "args=" })
@@ -56,7 +60,7 @@ return Commandline.Command.new({
             end
 
             process.exec("kill", { "-9", target }, { stdio = "none" })
-            print(`Killed Studio process {Chalk.bold(target)}.`)
+            print(`Killed Roblox Studio process {Chalk.bold(Chalk.yellowBright(target))}.`)
         end
     end,
 })

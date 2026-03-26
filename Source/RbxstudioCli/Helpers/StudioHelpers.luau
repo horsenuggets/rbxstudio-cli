@@ -216,7 +216,7 @@ function StudioHelpers._waitForAuth()
                 and content:find("LoginController")
                 and os.time() - startTime > 5
             then
-                print(Chalk.yellow("Waiting for login... Please log in through Studio."))
+                print(Chalk.yellow("Waiting for login... Please log in through Roblox Studio."))
                 prompted = true
             end
         end

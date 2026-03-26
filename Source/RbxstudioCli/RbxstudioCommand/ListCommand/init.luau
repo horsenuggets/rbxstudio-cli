@@ -199,7 +199,7 @@ return Commandline.Command.new({
     Description = "List all running Roblox Studio processes.",
     Impl = function(_args, _flags)
         if process.os ~= "macos" then
-            print("Listing Studio processes is currently only supported on macOS.")
+            print("Listing Roblox Studio processes is currently only supported on macOS.")
             process.exit(1)
         end
 

@@ -51,7 +51,7 @@ return Commandline.Command.new({
         if players > 0 then
             table.insert(details, `{Chalk.dim(tostring(players))} {if players == 1 then "player" else "players"}`)
         end
-        print(`Starting test server for {table.concat(details, ", ")}...`)
+        print(`Starting Roblox Studio test server for {table.concat(details, ", ")}...`)
 
         local studioArgs = {
             "-task",
