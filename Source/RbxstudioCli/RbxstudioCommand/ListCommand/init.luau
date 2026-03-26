@@ -3,7 +3,8 @@
 ListCommand
 
 Lists all running Roblox Studio processes with their PID, uptime, and
-what they are working on (place file, Start Page, etc.).
+what they are working on (place file, Start Page, etc.). Fetches place
+names from the Roblox API for published places.
 
 --]]
 
@@ -16,11 +17,18 @@ local serde = require("@lune/serde")
 
 local LOG_DIR = (process.env.HOME or "") .. "/Library/Logs/Roblox"
 
--- Cache for place name lookups to avoid duplicate API calls
+------------------------------------------------------------------------------------------
+-- Roblox API helpers
+------------------------------------------------------------------------------------------
+
+local robloSecurityCookie: string? = nil
 local placeNameCache: { [string]: string } = {}
 
--- Reads the .ROBLOSECURITY cookie from the macOS keychain
 local function getRobloSecurity(): string?
+    if robloSecurityCookie then
+        return robloSecurityCookie
+    end
+
     if process.os ~= "macos" then
         return nil
     end
@@ -36,7 +44,6 @@ local function getRobloSecurity(): string?
         return nil
     end
 
-    -- The value is a hex-encoded binary plist, decode it
     local hexResult = process.exec("sh", {
         "-c",
         "echo '" .. result.stdout:gsub("%s+", "") .. "' | xxd -r -p | plutil -convert xml1 -o - -",
@@ -46,12 +53,10 @@ local function getRobloSecurity(): string?
         return nil
     end
 
-    -- Extract the cookie value from the plist XML
-    local cookie = hexResult.stdout:match("_|WARNING[^<]+")
-    return cookie
+    robloSecurityCookie = hexResult.stdout:match("_|WARNING[^<]+")
+    return robloSecurityCookie
 end
 
--- Fetches the place name from the Roblox API
 local function getPlaceName(placeId: string): string?
     if placeNameCache[placeId] then
         return placeNameCache[placeId]
@@ -83,7 +88,10 @@ local function getPlaceName(placeId: string): string?
     return nil
 end
 
--- Extracts the log file path from a crash handler's command line args
+------------------------------------------------------------------------------------------
+-- Log parsing
+------------------------------------------------------------------------------------------
+
 local function getLogPath(crashHandlerArgs: string): string?
     local logName = crashHandlerArgs:match("attachment_([%w%.%-_]+_last%.log)=")
     if logName then
@@ -92,9 +100,9 @@ local function getLogPath(crashHandlerArgs: string): string?
     return nil
 end
 
--- Determines what Studio is doing based on its log file. Reads the
--- log for the latest session state since the user may have switched
--- places after launch.
+-- Determines what Studio is doing based on its log file. Scans for
+-- the latest session state since the user may switch places, open
+-- new documents, or return to the Start Page after launch.
 local function getSessionInfo(logPath: string): string
     if not fs.isFile(logPath) then
         return "Unknown"
@@ -102,27 +110,69 @@ local function getSessionInfo(logPath: string): string
 
     local content = fs.readFile(logPath)
 
-    -- Check for Team Create (most specific, check last)
-    local teamCreatePlace = nil
-    for place in content:gmatch("TeamCreateJoinPayload.*place (%d+)") do
-        teamCreatePlace = place
+    -- Track the latest event by finding the last occurrence of each
+    -- pattern and comparing their positions in the log
+    local lastTeamCreatePos = 0
+    local lastTeamCreatePlace: string? = nil
+    local lastTaskPos = 0
+    local lastTask: string? = nil
+    local lastStartPagePos = 0
+
+    -- Find all Team Create joins (latest wins)
+    local searchStart = 1
+    while true do
+        local matchStart, matchEnd, place = content:find("TeamCreateJoinPayload.*place (%d+)", searchStart)
+        if not matchStart then
+            break
+        end
+        lastTeamCreatePos = matchStart
+        lastTeamCreatePlace = place
+        searchStart = matchEnd + 1
     end
-    if teamCreatePlace then
-        local name = getPlaceName(teamCreatePlace)
+
+    -- Find all PlaceManager opens (latest wins)
+    searchStart = 1
+    while true do
+        local matchStart, matchEnd, t = content:find("PlaceManager::createAndShowIDEDoc with task (%w+)", searchStart)
+        if not matchStart then
+            break
+        end
+        lastTaskPos = matchStart
+        lastTask = t
+        searchStart = matchEnd + 1
+    end
+
+    -- Find the last Start Page show event
+    searchStart = 1
+    while true do
+        local matchStart, matchEnd = content:find("showStartPageWidgets", searchStart)
+        if not matchStart then
+            break
+        end
+        lastStartPagePos = matchStart
+        searchStart = matchEnd + 1
+    end
+
+    -- Determine state from whichever event is latest
+    local latestPos = math.max(lastTeamCreatePos, lastTaskPos, lastStartPagePos)
+
+    if latestPos == 0 then
+        return "Unknown"
+    end
+
+    if latestPos == lastStartPagePos and lastStartPagePos > lastTaskPos then
+        return "Start Page"
+    end
+
+    if latestPos == lastTeamCreatePos and lastTeamCreatePlace then
+        local name = getPlaceName(lastTeamCreatePlace)
         if name then
             return `Team Create ({name})`
         end
-        return `Team Create (place {teamCreatePlace})`
-    end
-
-    -- Check for the most recent PlaceManager open action
-    local lastTask = nil
-    for t in content:gmatch("PlaceManager::createAndShowIDEDoc with task (%w+)") do
-        lastTask = t
+        return `Team Create (place {lastTeamCreatePlace})`
     end
 
     if lastTask == "EditFile" then
-        -- Find the local file path from the command line in the log
         local filePath = content:match("%-localPlaceFile%s+(%S+)")
         if filePath then
             local fileName = filePath:match("([^/\\]+)$") or filePath
@@ -132,7 +182,6 @@ local function getSessionInfo(logPath: string): string
     end
 
     if lastTask == "EditPlace" or lastTask == "EditPlaceRevision" then
-        -- Find the last non-zero placeId from telemetry
         local lastPlaceId = nil
         for pid in content:gmatch("placeid: (%d+)") do
             if pid ~= "0" then
@@ -149,13 +198,69 @@ local function getSessionInfo(logPath: string): string
         return "Editing place"
     end
 
-    -- Check if still on Start Page (no place opened)
-    if not lastTask and content:find("showStartPageWidgets") then
-        return "Start Page"
+    -- Generic new document (Cmd+N creates a Baseplate)
+    if lastTask then
+        return "Editing new place"
     end
 
     return "Unknown"
 end
+
+------------------------------------------------------------------------------------------
+-- Table rendering
+------------------------------------------------------------------------------------------
+
+local function renderTable(headers: { string }, rows: { { string } })
+    -- Calculate column widths
+    local widths = {}
+    for i, header in headers do
+        widths[i] = #header
+    end
+    for _, row in rows do
+        for i, cell in row do
+            widths[i] = math.max(widths[i] or 0, #cell)
+        end
+    end
+
+    -- Build horizontal border
+    local borderParts = {}
+    for i, w in widths do
+        table.insert(borderParts, string.rep("─", w + 2))
+    end
+    local topBorder = "┌" .. table.concat(borderParts, "┬") .. "┐"
+    local midBorder = "├" .. table.concat(borderParts, "┼") .. "┤"
+    local botBorder = "└" .. table.concat(borderParts, "┴") .. "┘"
+
+    -- Build a row string
+    local function formatRow(cells: { string }): string
+        local parts = {}
+        for i, cell in cells do
+            local padding = string.rep(" ", (widths[i] or 0) - #cell)
+            table.insert(parts, " " .. cell .. padding .. " ")
+        end
+        return "│" .. table.concat(parts, "│") .. "│"
+    end
+
+    -- Print the table
+    print(topBorder)
+    print(formatRow(headers))
+    print(midBorder)
+    for _, row in rows do
+        print(formatRow(row))
+    end
+    print(botBorder)
+end
+
+------------------------------------------------------------------------------------------
+-- Command
+------------------------------------------------------------------------------------------
+
+type StudioProcess = {
+    pid: string,
+    uptime: string,
+    logPath: string?,
+    status: string?,
+}
 
 return Commandline.Command.new({
     Name = "list",
@@ -166,36 +271,28 @@ return Commandline.Command.new({
             process.exit(1)
         end
 
-        -- Get all RobloxStudio processes
-        local result = process.exec("ps", {
-            "-eo",
-            "pid,etime,args",
-        })
-
+        local result = process.exec("ps", { "-eo", "pid,etime,args" })
         if not result.ok then
             print(Chalk.red("Failed to list processes."))
             process.exit(1)
         end
 
-        -- Parse Studio main processes and their crash handlers
-        type StudioProcess = {
-            pid: string,
-            uptime: string,
-            logPath: string?,
-        }
-
+        -- Parse Studio processes and crash handlers
         local studios: { StudioProcess } = {}
 
         for line in result.stdout:gmatch("[^\n]+") do
             local pid, etime = line:match("^%s*(%d+)%s+(%S+)")
-            if pid and line:find("RobloxStudio.app/Contents/MacOS/RobloxStudio") then
-                if not line:find("RobloxCrashHandler") then
-                    table.insert(studios, {
-                        pid = pid,
-                        uptime = etime,
-                        logPath = nil,
-                    })
-                end
+            if
+                pid
+                and line:find("RobloxStudio.app/Contents/MacOS/RobloxStudio")
+                and not line:find("RobloxCrashHandler")
+            then
+                table.insert(studios, {
+                    pid = pid,
+                    uptime = etime,
+                    logPath = nil,
+                    status = nil,
+                })
             end
         end
 
@@ -219,12 +316,23 @@ return Commandline.Command.new({
             return
         end
 
+        -- Gather session info for all processes
+        for _, studio in studios do
+            studio.status = if studio.logPath then getSessionInfo(studio.logPath) else "Unknown"
+        end
+
+        -- Build table rows
+        local rows: { { string } } = {}
+        for _, studio in studios do
+            table.insert(rows, {
+                studio.pid,
+                studio.uptime,
+                studio.status or "Unknown",
+            })
+        end
+
         print(`{#studios} {if #studios == 1 then "instance" else "instances"} running.`)
         print()
-
-        for _, studio in studios do
-            local info = if studio.logPath then getSessionInfo(studio.logPath) else "Unknown"
-            print(`  {Chalk.bold(studio.pid)}  {Chalk.dim(studio.uptime)}  {info}`)
-        end
+        renderTable({ "PID", "Uptime", "Status" }, rows)
     end,
 })
