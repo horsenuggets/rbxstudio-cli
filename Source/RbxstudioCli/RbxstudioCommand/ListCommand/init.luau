@@ -122,11 +122,18 @@ local TimeHelpers = require("@rbxstudiocli/Helpers/TimeHelpers")
 local function formatUptime(etime: string): (string, string)
     local raw = TimeHelpers.formatUptime(etime)
 
-    -- Add dim styling to the unit suffixes
-    local colored = raw:gsub("(%d+)d", "%1" .. Colors.dim("d"))
-        :gsub("(%d+)h", "%1" .. Colors.dim("h"))
-        :gsub("(%d+)m", "%1" .. Colors.dim("m"))
-        :gsub("(%d+)s", "%1" .. Colors.dim("s"))
+    -- Add dim styling to the unit suffixes. Process each part
+    -- individually to avoid ANSI codes interfering with patterns.
+    local coloredParts = {}
+    for part in raw:gmatch("%S+") do
+        local num, unit = part:match("^(%d+)(%a)$")
+        if num and unit then
+            table.insert(coloredParts, num .. Colors.dim(unit))
+        else
+            table.insert(coloredParts, part)
+        end
+    end
+    local colored = table.concat(coloredParts, " ")
 
     return colored, raw
 end

@@ -118,12 +118,21 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     end
 
     if lastTask == "EditPlace" or lastTask == "EditPlaceRevision" then
+        -- Check the command line args for the universe ID. If it's 0,
+        -- this is a new unsaved place spawned by Studio (Cmd+N)
+        -- even though it inherits a place ID from the parent process.
+        local cmdLineUniverseId = content:match("%-universeId%s+(%d+)")
+        local isNewPlace = cmdLineUniverseId == "0"
+
         local lastPlaceId = nil
-        for pid in content:gmatch("placeid: (%d+)") do
-            if pid ~= "0" then
-                lastPlaceId = pid
+        if not isNewPlace then
+            for pid in content:gmatch("placeid: (%d+)") do
+                if pid ~= "0" then
+                    lastPlaceId = pid
+                end
             end
         end
+
         if lastPlaceId then
             local name = getPlaceName(lastPlaceId)
             return {
@@ -133,7 +142,7 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
             }
         end
         return {
-            status = "Editing place",
+            status = "Editing new place",
             placeId = nil,
             highlight = nil,
         }
