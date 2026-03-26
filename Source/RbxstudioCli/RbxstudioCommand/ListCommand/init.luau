@@ -103,6 +103,7 @@ end
 type SessionInfo = {
     status: string,
     placeId: string?,
+    highlight: string?,
 }
 
 -- Determines what Studio is doing based on its log file. Scans for
@@ -171,15 +172,10 @@ local function getSessionInfo(logPath: string): SessionInfo
 
     if latestPos == lastTeamCreatePos and lastTeamCreatePlace then
         local name = getPlaceName(lastTeamCreatePlace)
-        if name then
-            return {
-                status = `Team Create ({name})`,
-                placeId = lastTeamCreatePlace,
-            }
-        end
         return {
-            status = "Team Create",
+            status = if name then `Team Create ({name})` else "Team Create",
             placeId = lastTeamCreatePlace,
+            highlight = name,
         }
     end
 
@@ -187,9 +183,13 @@ local function getSessionInfo(logPath: string): SessionInfo
         local filePath = content:match("%-localPlaceFile%s+(%S+)")
         if filePath then
             local fileName = filePath:match("([^/\\]+)$") or filePath
-            return { status = `Editing {fileName}`, placeId = nil }
+            return {
+                status = `Editing {fileName}`,
+                placeId = nil,
+                highlight = fileName,
+            }
         end
-        return { status = "Editing local file", placeId = nil }
+        return { status = "Editing local file", placeId = nil, highlight = nil }
     end
 
     if lastTask == "EditPlace" or lastTask == "EditPlaceRevision" then
@@ -201,64 +201,73 @@ local function getSessionInfo(logPath: string): SessionInfo
         end
         if lastPlaceId then
             local name = getPlaceName(lastPlaceId)
-            if name then
-                return { status = `Editing {name}`, placeId = lastPlaceId }
-            end
             return {
-                status = "Editing place",
+                status = if name then `Editing {name}` else "Editing place",
                 placeId = lastPlaceId,
+                highlight = name,
             }
         end
-        return { status = "Editing place", placeId = nil }
+        return { status = "Editing place", placeId = nil, highlight = nil }
     end
 
     if lastTask then
-        return { status = "Editing new place", placeId = nil }
+        return { status = "Editing new place", placeId = nil, highlight = nil }
     end
 
-    return { status = "Unknown", placeId = nil }
+    return { status = "Unknown", placeId = nil, highlight = nil }
 end
 
 ------------------------------------------------------------------------------------------
 -- Table rendering
 ------------------------------------------------------------------------------------------
 
-local function renderTable(headers: { string }, rows: { { string } })
-    -- Calculate column widths
+-- Each row has raw (for width calculation) and colored (for display)
+type TableRow = {
+    raw: { string },
+    colored: { string },
+}
+
+local function renderTable(headers: { string }, rows: { TableRow })
+    -- Calculate column widths from raw uncolored text
     local widths = {}
     for i, header in headers do
         widths[i] = #header
     end
     for _, row in rows do
-        for i, cell in row do
+        for i, cell in row.raw do
             widths[i] = math.max(widths[i] or 0, #cell)
         end
     end
 
     local function border(left: string, mid: string, right: string): string
         local parts = {}
-        for i, w in widths do
+        for _, w in widths do
             table.insert(parts, string.rep("─", w + 2))
         end
-        return Chalk.dim(left .. table.concat(parts, mid) .. right)
+        return left .. table.concat(parts, mid) .. right
     end
 
-    local function formatRow(cells: { string }, colorFn: ((string) -> string)?): string
+    local function formatCells(cells: { string }, rawCells: { string }): string
         local parts = {}
         for i, cell in cells do
-            local padding = string.rep(" ", (widths[i] or 0) - #cell)
-            local text = if colorFn then colorFn(cell) else cell
-            local pad = if colorFn then colorFn(padding) else padding
-            table.insert(parts, ` {text}{pad} `)
+            local rawLen = #(rawCells[i] or "")
+            local padding = string.rep(" ", (widths[i] or 0) - rawLen)
+            table.insert(parts, ` {cell}{padding} `)
         end
-        return Chalk.dim("│") .. table.concat(parts, Chalk.dim("│")) .. Chalk.dim("│")
+        return "│" .. table.concat(parts, "│") .. "│"
+    end
+
+    -- Build bold header cells
+    local boldHeaders = {}
+    for _, h in headers do
+        table.insert(boldHeaders, Chalk.bold(h))
     end
 
     print(border("┌", "┬", "┐"))
-    print(formatRow(headers, Chalk.bold))
+    print(formatCells(boldHeaders, headers))
     print(border("├", "┼", "┤"))
     for _, row in rows do
-        print(formatRow(row))
+        print(formatCells(row.colored, row.raw))
     end
     print(border("└", "┴", "┘"))
 end
@@ -335,21 +344,42 @@ return Commandline.Command.new({
                 else { status = "Unknown", placeId = nil }
         end
 
-        -- Build table rows
-        local rows: { { string } } = {}
+        -- Build table rows with colored and raw versions
+        local rows: { TableRow } = {}
         for _, studio in studios do
             local session = studio.session :: SessionInfo
+            local rawPlaceId = session.placeId or "nil"
+            local coloredPlaceId = if session.placeId then Chalk.greenBright(session.placeId) else Chalk.dim("nil")
+
+            -- Color the highlight portion of the status. Escape
+            -- pattern special characters since highlights may contain
+            -- dots, dashes, etc.
+            local coloredStatus = session.status
+            if session.highlight then
+                local escaped = session.highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
+                coloredStatus = coloredStatus:gsub(escaped, Chalk.cyanBright(session.highlight), 1)
+            end
+
             table.insert(rows, {
-                studio.pid,
-                studio.uptime,
-                session.placeId or "nil",
-                session.status,
+                raw = {
+                    studio.pid,
+                    studio.uptime,
+                    rawPlaceId,
+                    session.status,
+                },
+                colored = {
+                    studio.pid,
+                    studio.uptime,
+                    coloredPlaceId,
+                    coloredStatus,
+                },
             })
         end
 
         local count = tostring(#studios)
         print(
-            `There {if #studios == 1 then "is" else "are"} {Chalk.bold(count)} Roblox Studio {if #studios == 1
+            `There {if #studios == 1 then "is" else "are"} {Chalk.bold(Chalk.yellow(count))} Roblox Studio {if #studios
+                    == 1
                 then "instance"
                 else "instances"} running.`
         )
