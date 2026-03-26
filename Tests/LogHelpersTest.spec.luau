@@ -188,7 +188,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 Info PlaceManager::createAndShowIDEDoc with task NewDocument
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit (new place)")
+            expect(result.status).to.equal("Edit (New place)")
             expect(result.placeId).to.equal(nil)
         end)
 
@@ -240,7 +240,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] universeid: 0
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit (new place)")
+            expect(result.status).to.equal("Edit (New place)")
             expect(result.placeId).to.equal(nil)
         end)
     end)

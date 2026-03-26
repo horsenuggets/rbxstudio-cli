@@ -83,6 +83,17 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     -- Determine state from whichever event is latest
     local latestPos = math.max(lastTeamCreatePos, lastTaskPos, lastStartPagePos)
 
+    -- Helpers to reduce repetition in return values
+    local NEW_PLACE: SessionInfo = { status = "Edit (New place)", placeId = nil, highlight = nil }
+
+    local function makeResult(prefix: string, id: string?, name: string?): SessionInfo
+        return {
+            status = if name then `{prefix} ({name})` else prefix,
+            placeId = id,
+            highlight = name,
+        }
+    end
+
     if latestPos == 0 then
         return { status = "Unknown", placeId = nil, highlight = nil }
     end
@@ -93,38 +104,26 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
 
     if latestPos == lastTeamCreatePos and lastTeamCreatePlace then
         local name = getPlaceName(lastTeamCreatePlace)
-        return {
-            status = if name then `Team Create ({name})` else "Team Create",
-            placeId = lastTeamCreatePlace,
-            highlight = name,
-        }
+        return makeResult("Team Create", lastTeamCreatePlace, name)
     end
 
     if lastTask == "EditFile" then
         local filePath = content:match("%-localPlaceFile%s+(%S+)")
         if filePath then
             local fileName = filePath:match("([^/\\]+)$") or filePath
-            return {
-                status = `Edit ({fileName})`,
-                placeId = nil,
-                highlight = fileName,
-            }
+            return makeResult("Edit", nil, fileName)
         end
-        return {
-            status = "Edit (local file)",
-            placeId = nil,
-            highlight = nil,
-        }
+        return makeResult("Edit", nil, "local file")
     end
 
     if lastTask == "EditPlace" or lastTask == "EditPlaceRevision" then
-        -- Check the command line args for the universe ID. If it's 0,
-        -- this was originally a new unsaved place (Cmd+N). But the
-        -- user may have since published it or navigated to a
+        -- Check the command line args for the universe ID. If it's
+        -- 0, this was originally a new unsaved place (Cmd+N). But
+        -- the user may have since published it or navigated to a
         -- different place, so also check for later telemetry entries
         -- with non-zero IDs that appear after the initial startup.
-        local cmdLineUniverseId = content:match("%-universeId%s+(%d+)")
         local cmdLinePlaceId = content:match("%-placeId%s+(%d+)")
+        local cmdLineUniverseId = content:match("%-universeId%s+(%d+)")
         local isNewPlace = cmdLineUniverseId == "0"
 
         -- Find the last non-zero place/universe IDs from telemetry
@@ -141,46 +140,24 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
             end
         end
 
+        -- For new places, only use telemetry IDs if they differ
+        -- from the inherited command line place ID (indicating a
+        -- publish or navigation)
         if isNewPlace then
-            -- If the last telemetry place ID differs from the
-            -- inherited command line place ID, the user published
-            -- or navigated to a different place
             if lastPlaceId and lastUniverseId and lastPlaceId ~= cmdLinePlaceId then
-                local name = getPlaceName(lastPlaceId)
-                return {
-                    status = if name then `Edit ({name})` else "Edit",
-                    placeId = lastPlaceId,
-                    highlight = name,
-                }
+                return makeResult("Edit", lastPlaceId, getPlaceName(lastPlaceId))
             end
-            return {
-                status = "Edit (new place)",
-                placeId = nil,
-                highlight = nil,
-            }
+            return NEW_PLACE
         end
 
         if lastPlaceId then
-            local name = getPlaceName(lastPlaceId)
-            return {
-                status = if name then `Edit ({name})` else "Edit",
-                placeId = lastPlaceId,
-                highlight = name,
-            }
+            return makeResult("Edit", lastPlaceId, getPlaceName(lastPlaceId))
         end
-        return {
-            status = "Edit",
-            placeId = nil,
-            highlight = nil,
-        }
+        return makeResult("Edit", nil, nil)
     end
 
     if lastTask then
-        return {
-            status = "Edit (new place)",
-            placeId = nil,
-            highlight = nil,
-        }
+        return NEW_PLACE
     end
 
     return { status = "Unknown", placeId = nil, highlight = nil }
