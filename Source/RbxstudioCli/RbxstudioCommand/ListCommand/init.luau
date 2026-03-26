@@ -193,21 +193,60 @@ end
 -- Command
 ------------------------------------------------------------------------------------------
 
+local Chalk = require("@packages/Chalk")
+
+-- Returns an RGB color on a gradient from green to red based on
+-- memory usage in MB. Under 1 GB is green, 1-3 GB transitions
+-- to yellow, 3-6 GB transitions to orange/red, 6 GB+ is red.
+local function memoryColor(mb: number): (string) -> string
+    local pct = math.clamp((mb - 1024) / (6 * 1024 - 1024), 0, 1)
+    local r, g, b
+    if pct <= 0 then
+        -- Bright green (healthy, under 1 GB)
+        r, g, b = 100, 240, 100
+    elseif pct <= 0.4 then
+        -- Bright green → Bright yellow
+        local t = pct / 0.4
+        r = math.floor(100 + 155 * t)
+        g = math.floor(240 - 10 * t)
+        b = math.floor(100 - 70 * t)
+    elseif pct <= 0.7 then
+        -- Bright yellow → Bright orange
+        local t = (pct - 0.4) / 0.3
+        r = 255
+        g = math.floor(230 - 120 * t)
+        b = math.floor(30 - 10 * t)
+    else
+        -- Bright orange → Bright red
+        local t = (pct - 0.7) / 0.3
+        r = 255
+        g = math.floor(110 - 80 * t)
+        b = math.floor(20 + 10 * t)
+    end
+    return Chalk.rgb(r, g, b)
+end
+
 -- Formats memory in KB to a human-readable string. Returns both a
--- colored string (dim unit) and a raw string for width calculation.
+-- colored string (gradient based on usage) and a raw string for
+-- width calculation.
 local function formatMemory(rssKb: number): (string, string)
+    local mb = rssKb / 1024
     local num, unit
     if rssKb >= 1024 * 1024 then
         num = string.format("%.1f", rssKb / (1024 * 1024))
         unit = "GB"
     elseif rssKb >= 1024 then
-        num = string.format("%.0f", rssKb / 1024)
+        num = string.format("%.0f", mb)
         unit = "MB"
     else
         num = tostring(rssKb)
         unit = "KB"
     end
-    return num .. " " .. Colors.dim(unit), num .. " " .. unit
+
+    local colorFn = memoryColor(mb)
+    local colored = colorFn(num) .. " " .. Colors.dim(unit)
+    local raw = num .. " " .. unit
+    return colored, raw
 end
 
 type StudioProcess = {
