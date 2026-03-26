@@ -64,4 +64,23 @@ function TimeHelpers.formatUptime(etime: string): (string, string)
     return table.concat(parts, " "), table.concat(parts, " ")
 end
 
+-- Formats uptime with dim unit suffixes for display. Returns both
+-- a colored string and a raw string for width calculation.
+function TimeHelpers.formatUptimeColored(etime: string): (string, string)
+    local Colors = require("@rbxstudiocli/Helpers/Colors")
+    local raw = TimeHelpers.formatUptime(etime)
+
+    local coloredParts = {}
+    for part in raw:gmatch("%S+") do
+        local num, unit = part:match("^(%d+)(%a)$")
+        if num and unit then
+            table.insert(coloredParts, num .. Colors.dim(unit))
+        else
+            table.insert(coloredParts, part)
+        end
+    end
+
+    return table.concat(coloredParts, " "), raw
+end
+
 return TimeHelpers

@@ -115,139 +115,10 @@ end
 -- Table rendering
 ------------------------------------------------------------------------------------------
 
+local MemoryHelpers = require("@rbxstudiocli/Helpers/MemoryHelpers")
+local TableHelpers = require("@rbxstudiocli/Helpers/TableHelpers")
 local TimeHelpers = require("@rbxstudiocli/Helpers/TimeHelpers")
-
--- Formats uptime with dim unit suffixes for display. Returns both
--- a colored string and a raw string for width calculation.
-local function formatUptime(etime: string): (string, string)
-    local raw = TimeHelpers.formatUptime(etime)
-
-    -- Add dim styling to the unit suffixes. Process each part
-    -- individually to avoid ANSI codes interfering with patterns.
-    local coloredParts = {}
-    for part in raw:gmatch("%S+") do
-        local num, unit = part:match("^(%d+)(%a)$")
-        if num and unit then
-            table.insert(coloredParts, num .. Colors.dim(unit))
-        else
-            table.insert(coloredParts, part)
-        end
-    end
-    local colored = table.concat(coloredParts, " ")
-
-    return colored, raw
-end
-
--- Each row has raw (for width calculation) and colored (for display)
-type TableRow = {
-    raw: { string },
-    colored: { string },
-}
-
-local function renderTable(headers: { string }, rows: { TableRow })
-    -- Calculate column widths from raw uncolored text
-    local widths = {}
-    for i, header in headers do
-        widths[i] = #header
-    end
-    for _, row in rows do
-        for i, cell in row.raw do
-            widths[i] = math.max(widths[i] or 0, #cell)
-        end
-    end
-
-    local function border(left: string, mid: string, right: string): string
-        local parts = {}
-        for _, w in widths do
-            table.insert(parts, string.rep("─", w + 2))
-        end
-        return left .. table.concat(parts, mid) .. right
-    end
-
-    local function formatCells(cells: { string }, rawCells: { string }): string
-        local parts = {}
-        for i, cell in cells do
-            local rawLen = #(rawCells[i] or "")
-            local padding = string.rep(" ", (widths[i] or 0) - rawLen)
-            table.insert(parts, ` {cell}{padding} `)
-        end
-        return "│" .. table.concat(parts, "│") .. "│"
-    end
-
-    -- Build bold header cells
-    local boldHeaders = {}
-    for _, h in headers do
-        table.insert(boldHeaders, Colors.bold(h))
-    end
-
-    print(border("┌", "┬", "┐"))
-    print(formatCells(boldHeaders, headers))
-    print(border("├", "┼", "┤"))
-    for _, row in rows do
-        print(formatCells(row.colored, row.raw))
-    end
-    print(border("└", "┴", "┘"))
-end
-
-------------------------------------------------------------------------------------------
--- Command
-------------------------------------------------------------------------------------------
-
-local Chalk = require("@packages/Chalk")
-
--- Returns an RGB color on a gradient from green to red based on
--- memory usage in MB. Under 1 GB is green, 1-3 GB transitions
--- to yellow, 3-6 GB transitions to orange/red, 6 GB+ is red.
-local function memoryColor(mb: number): (string) -> string
-    local pct = math.clamp((mb - 1024) / (6 * 1024 - 1024), 0, 1)
-    local r, g, b
-    if pct <= 0 then
-        -- Bright green (healthy, under 1 GB)
-        r, g, b = 100, 240, 100
-    elseif pct <= 0.4 then
-        -- Bright green → Bright yellow
-        local t = pct / 0.4
-        r = math.floor(100 + 155 * t)
-        g = math.floor(240 - 10 * t)
-        b = math.floor(100 - 70 * t)
-    elseif pct <= 0.7 then
-        -- Bright yellow → Bright orange
-        local t = (pct - 0.4) / 0.3
-        r = 255
-        g = math.floor(230 - 120 * t)
-        b = math.floor(30 - 10 * t)
-    else
-        -- Bright orange → Bright red
-        local t = (pct - 0.7) / 0.3
-        r = 255
-        g = math.floor(110 - 80 * t)
-        b = math.floor(20 + 10 * t)
-    end
-    return Chalk.rgb(r, g, b)
-end
-
--- Formats memory in KB to a human-readable string. Returns both a
--- colored string (gradient based on usage) and a raw string for
--- width calculation.
-local function formatMemory(rssKb: number): (string, string)
-    local mb = rssKb / 1024
-    local num, unit
-    if rssKb >= 1024 * 1024 then
-        num = string.format("%.1f", rssKb / (1024 * 1024))
-        unit = "GB"
-    elseif rssKb >= 1024 then
-        num = string.format("%.0f", mb)
-        unit = "MB"
-    else
-        num = tostring(rssKb)
-        unit = "KB"
-    end
-
-    local colorFn = memoryColor(mb)
-    local colored = colorFn(num .. " " .. unit)
-    local raw = num .. " " .. unit
-    return colored, raw
-end
+type TableRow = TableHelpers.TableRow
 
 type StudioProcess = {
     memory: string,
@@ -284,8 +155,8 @@ return Commandline.Command.new({
                 and line:find("RobloxStudio.app/Contents/MacOS/RobloxStudio")
                 and not line:find("RobloxCrashHandler")
             then
-                local coloredUptime, rawUptime = formatUptime(etime)
-                local coloredMemory, rawMemory = formatMemory(tonumber(rss) or 0)
+                local coloredUptime, rawUptime = TimeHelpers.formatUptimeColored(etime)
+                local coloredMemory, rawMemory = MemoryHelpers.format(tonumber(rss) or 0)
                 table.insert(studios, {
                     memory = coloredMemory,
                     memoryRaw = rawMemory,
@@ -372,6 +243,6 @@ return Commandline.Command.new({
                 else "instances"} running.`
         )
         print()
-        renderTable({ "Process ID", "Memory", "Uptime", "Place ID", "Status" }, rows)
+        TableHelpers.render({ "Process ID", "Memory", "Uptime", "Place ID", "Status" }, rows)
     end,
 })
