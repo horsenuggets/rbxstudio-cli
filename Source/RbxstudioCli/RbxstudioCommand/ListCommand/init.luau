@@ -262,7 +262,7 @@ return Commandline.Command.new({
         for _, studio in studios do
             local session = studio.session :: SessionInfo
             local rawPlaceId = session.placeId or "nil"
-            local coloredPlaceId = if session.placeId then Colors.placeId(session.placeId) else Colors.nil_("nil")
+            local coloredPlaceId = if session.placeId then Colors.numericId(session.placeId) else Colors.nil_("nil")
 
             -- Color the highlight portion of the status. Escape
             -- pattern special characters since highlights may contain

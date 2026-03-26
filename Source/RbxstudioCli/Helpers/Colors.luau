@@ -21,7 +21,7 @@ Colors.error = Chalk.red
 Colors.warning = Chalk.yellow
 
 -- Data values
-Colors.placeId = Chalk.greenBright
+Colors.numericId = Chalk.magentaBright
 Colors.placeName = Chalk.cyanBright
 Colors.fileName = Chalk.cyanBright
 Colors.configFile = Chalk.hex("#CC7722")
