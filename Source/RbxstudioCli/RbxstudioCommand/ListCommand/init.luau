@@ -193,7 +193,18 @@ end
 -- Command
 ------------------------------------------------------------------------------------------
 
+-- Formats memory in KB to a human-readable string
+local function formatMemory(rssKb: number): string
+    if rssKb >= 1024 * 1024 then
+        return string.format("%.1f GB", rssKb / (1024 * 1024))
+    elseif rssKb >= 1024 then
+        return string.format("%.0f MB", rssKb / 1024)
+    end
+    return `{rssKb} KB`
+end
+
 type StudioProcess = {
+    memory: string,
     pid: string,
     uptime: string,
     uptimeRaw: string,
@@ -210,7 +221,7 @@ return Commandline.Command.new({
             process.exit(1)
         end
 
-        local result = process.exec("ps", { "-eo", "pid,etime,args" })
+        local result = process.exec("ps", { "-eo", "pid,rss,etime,args" })
         if not result.ok then
             print(Colors.error("Failed to list processes."))
             process.exit(1)
@@ -220,7 +231,7 @@ return Commandline.Command.new({
         local studios: { StudioProcess } = {}
 
         for line in result.stdout:gmatch("[^\n]+") do
-            local pid, etime = line:match("^%s*(%d+)%s+(%S+)")
+            local pid, rss, etime = line:match("^%s*(%d+)%s+(%d+)%s+(%S+)")
             if
                 pid
                 and line:find("RobloxStudio.app/Contents/MacOS/RobloxStudio")
@@ -228,6 +239,7 @@ return Commandline.Command.new({
             then
                 local coloredUptime, rawUptime = formatUptime(etime)
                 table.insert(studios, {
+                    memory = formatMemory(tonumber(rss) or 0),
                     pid = pid,
                     uptime = coloredUptime,
                     uptimeRaw = rawUptime,
@@ -288,12 +300,14 @@ return Commandline.Command.new({
             table.insert(rows, {
                 raw = {
                     studio.pid,
+                    studio.memory,
                     studio.uptimeRaw,
                     rawPlaceId,
                     session.status,
                 },
                 colored = {
                     studio.pid,
+                    studio.memory,
                     studio.uptime,
                     coloredPlaceId,
                     coloredStatus,
@@ -309,6 +323,6 @@ return Commandline.Command.new({
                 else "instances"} running.`
         )
         print()
-        renderTable({ "Process ID", "Uptime", "Place ID", "Status" }, rows)
+        renderTable({ "Process ID", "Memory", "Uptime", "Place ID", "Status" }, rows)
     end,
 })
