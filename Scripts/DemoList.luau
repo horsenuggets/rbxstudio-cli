@@ -47,16 +47,16 @@ local function formatMemory(rssKb: number): (string, string)
     local num, unit
     if rssKb >= 1024 * 1024 then
         num = string.format("%.1f", rssKb / (1024 * 1024))
-        unit = "GB"
+        unit = "gb"
     elseif rssKb >= 1024 then
         num = string.format("%.0f", mb)
-        unit = "MB"
+        unit = "mb"
     else
         num = tostring(rssKb)
-        unit = "KB"
+        unit = "kb"
     end
     local colorFn = memoryColor(mb)
-    return colorFn(num) .. " " .. Colors.dim(unit), num .. " " .. unit
+    return colorFn(num) .. Colors.dim(unit), num .. unit
 end
 
 local function formatUptime(etime: string): (string, string)

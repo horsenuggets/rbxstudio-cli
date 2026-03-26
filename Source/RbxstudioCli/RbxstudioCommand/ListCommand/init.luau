@@ -234,18 +234,18 @@ local function formatMemory(rssKb: number): (string, string)
     local num, unit
     if rssKb >= 1024 * 1024 then
         num = string.format("%.1f", rssKb / (1024 * 1024))
-        unit = "GB"
+        unit = "gb"
     elseif rssKb >= 1024 then
         num = string.format("%.0f", mb)
-        unit = "MB"
+        unit = "mb"
     else
         num = tostring(rssKb)
-        unit = "KB"
+        unit = "kb"
     end
 
     local colorFn = memoryColor(mb)
-    local colored = colorFn(num) .. " " .. Colors.dim(unit)
-    local raw = num .. " " .. unit
+    local colored = colorFn(num) .. Colors.dim(unit)
+    local raw = num .. unit
     return colored, raw
 end
 
