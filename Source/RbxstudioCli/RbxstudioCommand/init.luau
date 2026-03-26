@@ -11,6 +11,8 @@ local ApiCommand = require("@self/ApiCommand")
 local Commandline = require("@packages/Commandline")
 local EditCommand = require("@self/EditCommand")
 local FileCommand = require("@self/FileCommand")
+local KillCommand = require("@self/KillCommand")
+local ListCommand = require("@self/ListCommand")
 local NewCommand = require("@self/NewCommand")
 local OpenCommand = require("@self/OpenCommand")
 local PluginCommand = require("@self/PluginCommand")
@@ -25,6 +27,8 @@ return Commandline.Command.new({
         ApiCommand,
         EditCommand,
         FileCommand,
+        KillCommand,
+        ListCommand,
         NewCommand,
         OpenCommand,
         PluginCommand,
