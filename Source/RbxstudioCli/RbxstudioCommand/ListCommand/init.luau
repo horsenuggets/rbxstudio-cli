@@ -193,18 +193,26 @@ end
 -- Command
 ------------------------------------------------------------------------------------------
 
--- Formats memory in KB to a human-readable string
-local function formatMemory(rssKb: number): string
+-- Formats memory in KB to a human-readable string. Returns both a
+-- colored string (dim unit) and a raw string for width calculation.
+local function formatMemory(rssKb: number): (string, string)
+    local num, unit
     if rssKb >= 1024 * 1024 then
-        return string.format("%.1f GB", rssKb / (1024 * 1024))
+        num = string.format("%.1f", rssKb / (1024 * 1024))
+        unit = "GB"
     elseif rssKb >= 1024 then
-        return string.format("%.0f MB", rssKb / 1024)
+        num = string.format("%.0f", rssKb / 1024)
+        unit = "MB"
+    else
+        num = tostring(rssKb)
+        unit = "KB"
     end
-    return `{rssKb} KB`
+    return num .. " " .. Colors.dim(unit), num .. " " .. unit
 end
 
 type StudioProcess = {
     memory: string,
+    memoryRaw: string,
     pid: string,
     uptime: string,
     uptimeRaw: string,
@@ -238,8 +246,10 @@ return Commandline.Command.new({
                 and not line:find("RobloxCrashHandler")
             then
                 local coloredUptime, rawUptime = formatUptime(etime)
+                local coloredMemory, rawMemory = formatMemory(tonumber(rss) or 0)
                 table.insert(studios, {
-                    memory = formatMemory(tonumber(rss) or 0),
+                    memory = coloredMemory,
+                    memoryRaw = rawMemory,
                     pid = pid,
                     uptime = coloredUptime,
                     uptimeRaw = rawUptime,
@@ -300,7 +310,7 @@ return Commandline.Command.new({
             table.insert(rows, {
                 raw = {
                     studio.pid,
-                    studio.memory,
+                    studio.memoryRaw,
                     studio.uptimeRaw,
                     rawPlaceId,
                     session.status,
