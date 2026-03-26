@@ -15,7 +15,17 @@ local process = require("@lune/process")
 local serde = require("@lune/serde")
 local t = require("@packages/t")
 
+local HOME = process.env.HOME or ""
+
 local ProjectHelpers = {}
+
+-- Replaces the home directory prefix with ~ for display
+function ProjectHelpers.tildify(path: string): string
+    if HOME ~= "" and path:sub(1, #HOME) == HOME then
+        return "~" .. path:sub(#HOME + 1)
+    end
+    return path
+end
 
 local TEMPLATE_PROJECT = {
     name = "rbxstudio-temp",
@@ -95,8 +105,9 @@ function ProjectHelpers.createTempPlace(name: string?): string
     project.name = placeName
 
     fs.writeFile(projectPath, serde.encode("json", project, true))
-    local projectDir = projectPath:match("^(.*/)") or ""
-    local projectFile = projectPath:match("([^/]+)$") or projectPath
+    local displayPath = ProjectHelpers.tildify(projectPath)
+    local projectDir = displayPath:match("^(.*/)") or ""
+    local projectFile = displayPath:match("([^/]+)$") or displayPath
     print(`Created project at {Colors.path(projectDir)}{Colors.configFile(projectFile)}.`)
 
     -- Build the place file with Rojo
@@ -113,8 +124,9 @@ function ProjectHelpers.createTempPlace(name: string?): string
         process.exit(1)
     end
 
-    local outputDir = outputPath:match("^(.*/)") or ""
-    local outputFile = outputPath:match("([^/]+)$") or outputPath
+    local displayOutput = ProjectHelpers.tildify(outputPath)
+    local outputDir = displayOutput:match("^(.*/)") or ""
+    local outputFile = displayOutput:match("([^/]+)$") or displayOutput
     print(`Built place at {Colors.path(outputDir)}{Colors.fileName(outputFile)}.`)
     return outputPath
 end
