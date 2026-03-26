@@ -151,11 +151,13 @@ function StudioHelpers.launch(args: { string }?, skipAuth: boolean?)
         process.exec("sh", shellArgs, { stdio = "none" })
     end
 
-    print(Chalk.greenBright("Roblox Studio launched."))
+    if not skipAuth then
+        print(Chalk.greenBright("Roblox Studio launched."))
 
-    -- Poll Studio logs to verify authentication
-    if process.os == "macos" and not skipAuth then
-        StudioHelpers._waitForAuth()
+        -- Poll Studio logs to verify authentication
+        if process.os == "macos" then
+            StudioHelpers._waitForAuth()
+        end
     end
 end
 

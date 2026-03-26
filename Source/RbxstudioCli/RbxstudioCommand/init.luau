@@ -8,6 +8,7 @@ and managing Roblox Studio sessions.
 --]]
 
 local ApiCommand = require("@self/ApiCommand")
+local CleanCommand = require("@self/CleanCommand")
 local Commandline = require("@packages/Commandline")
 local EditCommand = require("@self/EditCommand")
 local FileCommand = require("@self/FileCommand")
@@ -25,6 +26,7 @@ return Commandline.Command.new({
     Version = __VERSION__,
     Subcommands = {
         ApiCommand,
+        CleanCommand,
         EditCommand,
         FileCommand,
         KillCommand,
