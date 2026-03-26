@@ -2,14 +2,35 @@
 
 EditCommand
 
-Opens a published Roblox place for editing by place ID and universe ID. Can
-optionally open a specific revision or navigate to a script within the place.
+Opens a published Roblox place for editing by place ID. Automatically
+resolves the universe ID from the Roblox API. Can optionally open a
+specific revision or navigate to a script within the place.
 
 --]]
 
 local Chalk = require("@packages/Chalk")
 local Commandline = require("@packages/Commandline")
 local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
+local net = require("@lune/net")
+local process = require("@lune/process")
+local serde = require("@lune/serde")
+
+-- Resolves the universe ID for a place ID using the public Roblox API
+local function getUniverseId(placeId: string): string?
+    local ok, response = pcall(net.request, {
+        url = `https://apis.roblox.com/universes/v1/places/{placeId}/universe`,
+        method = "GET",
+    })
+
+    if ok and response.ok then
+        local success, data = pcall(serde.decode, "json", response.body)
+        if success and data and data.universeId then
+            return tostring(data.universeId)
+        end
+    end
+
+    return nil
+end
 
 return Commandline.Command.new({
     Name = "edit",
@@ -18,11 +39,6 @@ return Commandline.Command.new({
         Commandline.Arg.new({
             Name = "placeid",
             Description = "The place ID to edit.",
-            Type = "string",
-        }),
-        Commandline.Arg.new({
-            Name = "universeid",
-            Description = "The universe ID containing the place.",
             Type = "string",
         }),
     },
@@ -52,14 +68,20 @@ return Commandline.Command.new({
     },
     Impl = function(args, flags)
         local placeId = args.placeid
-        local universeId = args.universeid
         local version = flags.version and flags.version.Value
         local scriptPath = flags.script and flags.script.Value
         local line = flags.line and flags.line.Value
 
+        -- Resolve universe ID from the Roblox API
+        local universeId = getUniverseId(placeId)
+        if not universeId then
+            print(Chalk.red(`Failed to resolve universe ID for place {Chalk.bold(placeId)}.`))
+            process.exit(1)
+        end
+
         local task = if version then "EditPlaceRevision" else "EditPlace"
 
-        local details = { `place {Chalk.dim(placeId)}`, `universe {Chalk.dim(universeId)}` }
+        local details = { `place {Chalk.dim(placeId)}` }
         if version then
             table.insert(details, `version {Chalk.dim(tostring(version))}`)
         end

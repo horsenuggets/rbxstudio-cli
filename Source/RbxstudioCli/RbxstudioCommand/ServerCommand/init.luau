@@ -2,7 +2,8 @@
 
 ServerCommand
 
-Starts a local test server with optional test clients. Useful for testing
+Starts a local test server with optional test clients. Automatically
+resolves the universe ID from the Roblox API. Useful for testing
 multiplayer games locally without publishing.
 
 --]]
@@ -10,6 +11,26 @@ multiplayer games locally without publishing.
 local Chalk = require("@packages/Chalk")
 local Commandline = require("@packages/Commandline")
 local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
+local net = require("@lune/net")
+local process = require("@lune/process")
+local serde = require("@lune/serde")
+
+-- Resolves the universe ID for a place ID using the public Roblox API
+local function getUniverseId(placeId: string): string?
+    local ok, response = pcall(net.request, {
+        url = `https://apis.roblox.com/universes/v1/places/{placeId}/universe`,
+        method = "GET",
+    })
+
+    if ok and response.ok then
+        local success, data = pcall(serde.decode, "json", response.body)
+        if success and data and data.universeId then
+            return tostring(data.universeId)
+        end
+    end
+
+    return nil
+end
 
 return Commandline.Command.new({
     Name = "server",
@@ -18,11 +39,6 @@ return Commandline.Command.new({
         Commandline.Arg.new({
             Name = "placeid",
             Description = "The place ID to run.",
-            Type = "string",
-        }),
-        Commandline.Arg.new({
-            Name = "universeid",
-            Description = "The universe ID containing the place.",
             Type = "string",
         }),
     },
@@ -43,11 +59,17 @@ return Commandline.Command.new({
     },
     Impl = function(args, flags)
         local placeId = args.placeid
-        local universeId = args.universeid
         local players = flags.players and flags.players.Value or 0
         local port = flags.port and flags.port.Value or 0
 
-        local details = { `place {Chalk.dim(placeId)}`, `universe {Chalk.dim(universeId)}` }
+        -- Resolve universe ID from the Roblox API
+        local universeId = getUniverseId(placeId)
+        if not universeId then
+            print(Chalk.red(`Failed to resolve universe ID for place {Chalk.bold(placeId)}.`))
+            process.exit(1)
+        end
+
+        local details = { `place {Chalk.dim(placeId)}` }
         if players > 0 then
             table.insert(details, `{Chalk.dim(tostring(players))} {if players == 1 then "player" else "players"}`)
         end
