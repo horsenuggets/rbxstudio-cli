@@ -384,6 +384,6 @@ return Commandline.Command.new({
                 else "instances"} running.`
         )
         print()
-        renderTable({ "PID", "Uptime", "Place ID", "Status" }, rows)
+        renderTable({ "Process ID", "Uptime", "Place ID", "Status" }, rows)
     end,
 })
