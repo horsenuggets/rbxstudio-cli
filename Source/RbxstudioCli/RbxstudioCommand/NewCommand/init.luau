@@ -19,10 +19,9 @@ return Commandline.Command.new({
     Args = {
         Commandline.Arg.new({
             Name = "name",
-            Description = "Name for the temporary place.",
+            Description = "Name for the temporary place. If omitted, a random name is generated.",
             Type = "string",
             Required = false,
-            Default = "rbxstudio-temp",
         }),
     },
     Flags = {
@@ -34,7 +33,11 @@ return Commandline.Command.new({
     Impl = function(args, flags)
         local name = args.name
 
-        print(`Creating new place {Chalk.dim(name)}...`)
+        if name then
+            print(`Creating new place {Chalk.dim(name)}...`)
+        else
+            print("Creating new temporary place...")
+        end
 
         local placePath = ProjectHelpers.createTempPlace(name)
 
