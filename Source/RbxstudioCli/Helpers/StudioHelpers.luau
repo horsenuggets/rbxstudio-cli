@@ -224,7 +224,7 @@ function StudioHelpers._waitForAuth()
         task.wait(AUTH_POLL_INTERVAL)
     end
 
-    print(Chalk.red("Login timed out after " .. AUTH_TIMEOUT .. " seconds."))
+    print(Chalk.red(`Login timed out after {AUTH_TIMEOUT} {if AUTH_TIMEOUT == 1 then "second" else "seconds"}.`))
     process.exit(1)
 end
 
