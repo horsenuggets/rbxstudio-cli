@@ -35,15 +35,25 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     local lastTask: string? = nil
     local lastStartPagePos = 0
 
-    -- Find all Team Create joins (latest wins)
+    -- Find all Team Create log entries (latest wins). Track position
+    -- from any TeamCreateJoinPayload line, but only extract place ID
+    -- from lines that contain it.
     local searchStart = 1
     while true do
-        local matchStart, matchEnd, place = content:find("TeamCreateJoinPayload.*place (%d+)", searchStart)
+        local matchStart, matchEnd = content:find("TeamCreateJoinPayload", searchStart)
         if not matchStart then
             break
         end
         lastTeamCreatePos = matchStart
-        lastTeamCreatePlace = place
+
+        -- Extract place ID if this line has one
+        local lineEnd = content:find("\n", matchEnd) or #content
+        local line = content:sub(matchStart, lineEnd)
+        local place = line:match("place (%d+)")
+        if place then
+            lastTeamCreatePlace = place
+        end
+
         searchStart = matchEnd + 1
     end
 
