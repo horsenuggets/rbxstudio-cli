@@ -4,6 +4,8 @@ StudioHelpers
 
 Utilities for locating and launching Roblox Studio. Handles resolving the
 Studio binary path per platform and spawning Studio as a detached process.
+Throttles launches to prevent auth race conditions when multiple instances
+start simultaneously.
 
 --]]
 
@@ -17,6 +19,10 @@ local STUDIO_PATHS = {
     windows = `{process.env.LOCALAPPDATA or ""}/Roblox/Versions`,
     linux = "/usr/bin/roblox-studio",
 }
+
+local LAUNCH_COOLDOWN = 5
+local LOCKFILE_DIR = `{process.env.HOME}/.rbxstudio-cli`
+local LOCKFILE_PATH = `{LOCKFILE_DIR}/last-launch`
 
 local StudioHelpers = {}
 
@@ -58,11 +64,62 @@ function StudioHelpers.getStudioPath(): string
     end
 end
 
+-- Waits until the launch cooldown has elapsed since the last launch.
+-- Uses flock to serialize concurrent CLI invocations so only one
+-- Studio process starts at a time, preventing auth race conditions.
+local function waitForCooldown()
+    if not fs.isDir(LOCKFILE_DIR) then
+        fs.writeDir(LOCKFILE_DIR)
+    end
+
+    -- Serialize launches using an atomic mkdir lock in a shell
+    -- script. mkdir fails if the directory already exists, so only
+    -- one process acquires the lock at a time. Others spin until
+    -- they can acquire it.
+    local lockDir = LOCKFILE_PATH .. ".lock"
+    local cooldown = tostring(LAUNCH_COOLDOWN)
+
+    -- Build the shell script with concatenation to avoid backtick
+    -- interpolation issues with $ characters
+    local lines = {
+        "while ! mkdir " .. '"' .. lockDir .. '"' .. " 2>/dev/null; do",
+        "  sleep 0.1",
+        "done",
+        'if [ -f "' .. LOCKFILE_PATH .. '" ]; then',
+        '  last=$(cat "' .. LOCKFILE_PATH .. '" 2>/dev/null)',
+        "  now=$(date +%s)",
+        "  elapsed=$((now - last))",
+        "  if [ $elapsed -lt " .. cooldown .. " ]; then",
+        "    remaining=$((" .. cooldown .. " - elapsed))",
+        '    echo "WAIT:$remaining"',
+        "    sleep $remaining",
+        "  fi",
+        "fi",
+        'date +%s > "' .. LOCKFILE_PATH .. '"',
+        'rmdir "' .. lockDir .. '"',
+    }
+    local script = table.concat(lines, "\n")
+
+    local result = process.exec("sh", { "-c", script })
+    if result.ok and result.stdout:find("WAIT:") then
+        local remaining = result.stdout:match("WAIT:(%d+)")
+        if remaining then
+            print(
+                Chalk.dim(
+                    `Waited {remaining} {if remaining == "1" then "second" else "seconds"} for previous Studio launch.`
+                )
+            )
+        end
+    end
+end
+
 -- Launches Studio as a detached process so the CLI exits immediately
 function StudioHelpers.launch(args: { string }?)
     assert(t.optional(t.array(t.string))(args))
 
     local studioArgs = args or {}
+
+    waitForCooldown()
 
     if process.os == "macos" then
         -- Launch the binary directly via sh so each invocation gets its
@@ -86,8 +143,7 @@ function StudioHelpers.launch(args: { string }?)
         end
         process.exec("cmd", cmdArgs, { stdio = "none" })
     else
-        -- On Linux, use setsid or nohup to detach, falling back to
-        -- direct execution
+        -- On Linux, background the process via sh
         local studioPath = StudioHelpers.getStudioPath()
         local shellArgs = { "-c", `"{studioPath}" {table.concat(studioArgs, " ")} &` }
         process.exec("sh", shellArgs, { stdio = "none" })
