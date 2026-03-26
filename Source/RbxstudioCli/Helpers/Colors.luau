@@ -21,10 +21,10 @@ Colors.error = Chalk.red
 Colors.warning = Chalk.yellow
 
 -- Data values
-Colors.numericId = Chalk.magentaBright
+Colors.numericId = Chalk.hex("#96cc22")
 Colors.placeName = Chalk.cyanBright
 Colors.fileName = Chalk.cyanBright
-Colors.configFile = Chalk.hex("#CC7722")
+Colors.configFile = Chalk.hex("#cc7722")
 Colors.count = function(text: string): string
     return Chalk.bold(Chalk.yellowBright(text))
 end
