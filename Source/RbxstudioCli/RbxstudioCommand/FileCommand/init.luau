@@ -33,7 +33,7 @@ return Commandline.Command.new({
         local filePath = args.path
 
         if not fs.isFile(filePath) then
-            print(Chalk.red(`File not found "{filePath}".`))
+            print(Chalk.red(`File not found {Chalk.bold(filePath)}.`))
             process.exit(1)
         end
 
