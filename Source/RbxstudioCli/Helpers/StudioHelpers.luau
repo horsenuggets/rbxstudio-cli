@@ -65,24 +65,18 @@ function StudioHelpers.launch(args: { string }?)
     local studioArgs = args or {}
 
     if process.os == "macos" then
-        if #studioArgs == 0 then
-            -- No arguments, use "open -a" for clean app activation that
-            -- preserves auth session
-            process.exec("open", { "-a", STUDIO_PATHS.macos }, { stdio = "none" })
-        else
-            -- Launch the binary directly via sh so arguments are passed
-            -- correctly (open -a ignores --args when Studio is already
-            -- running)
-            local studioPath = StudioHelpers.getStudioPath()
-            local quoted = { `"{studioPath}"` }
-            for _, arg in studioArgs do
-                table.insert(quoted, `"{arg}"`)
-            end
-            process.exec("sh", {
-                "-c",
-                `{table.concat(quoted, " ")} &>/dev/null &`,
-            }, { stdio = "none" })
+        -- Launch the binary directly via sh so each invocation gets its
+        -- own process with the correct arguments. "open -a" ignores args
+        -- when Studio is already running.
+        local studioPath = StudioHelpers.getStudioPath()
+        local quoted = { `"{studioPath}"` }
+        for _, arg in studioArgs do
+            table.insert(quoted, `"{arg}"`)
         end
+        process.exec("sh", {
+            "-c",
+            `{table.concat(quoted, " ")} &>/dev/null &`,
+        }, { stdio = "none" })
     elseif process.os == "windows" then
         -- Use "start" via cmd to launch detached on Windows
         local studioPath = StudioHelpers.getStudioPath()
