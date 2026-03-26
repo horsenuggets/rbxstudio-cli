@@ -9,6 +9,7 @@ that Studio can open.
 --]]
 
 local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local fs = require("@lune/fs")
 local process = require("@lune/process")
 local serde = require("@lune/serde")
@@ -79,7 +80,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
 
     if fs.isDir(tempDir) then
         if name then
-            print(Chalk.red(`Place {Chalk.bold(name)} already exists.`))
+            print(Colors.error(`Place {Colors.bold(name)} already exists.`))
             process.exit(1)
         end
     else
@@ -96,7 +97,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
     fs.writeFile(projectPath, serde.encode("json", project, true))
     local projectDir = projectPath:match("^(.*/)") or ""
     local projectFile = projectPath:match("([^/]+)$") or projectPath
-    print(`Created project at {Chalk.dim(projectDir)}{Chalk.yellow(projectFile)}.`)
+    print(`Created project at {Colors.path(projectDir)}{Colors.configFile(projectFile)}.`)
 
     -- Build the place file with Rojo
     local result = process.exec("rojo", {
@@ -107,14 +108,14 @@ function ProjectHelpers.createTempPlace(name: string?): string
     })
 
     if not result.ok then
-        print(Chalk.red("Failed to build place file with Rojo."))
+        print(Colors.error("Failed to build place file with Rojo."))
         print(result.stderr)
         process.exit(1)
     end
 
     local outputDir = outputPath:match("^(.*/)") or ""
     local outputFile = outputPath:match("([^/]+)$") or outputPath
-    print(`Built place at {Chalk.dim(outputDir)}{Chalk.cyanBright(outputFile)}.`)
+    print(`Built place at {Colors.path(outputDir)}{Colors.fileName(outputFile)}.`)
     return outputPath
 end
 

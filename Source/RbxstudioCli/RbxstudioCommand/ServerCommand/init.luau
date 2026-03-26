@@ -8,7 +8,7 @@ multiplayer games locally without publishing.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
 local net = require("@lune/net")
@@ -65,13 +65,13 @@ return Commandline.Command.new({
         -- Resolve universe ID from the Roblox API
         local universeId = getUniverseId(placeId)
         if not universeId then
-            print(Chalk.red(`Failed to resolve universe ID for place {Chalk.bold(placeId)}.`))
+            print(Colors.error(`Failed to resolve universe ID for place {Colors.bold(placeId)}.`))
             process.exit(1)
         end
 
-        local details = { `place {Chalk.dim(placeId)}` }
+        local details = { `place {Colors.dim(placeId)}` }
         if players > 0 then
-            table.insert(details, `{Chalk.dim(tostring(players))} {if players == 1 then "player" else "players"}`)
+            table.insert(details, `{Colors.dim(tostring(players))} {if players == 1 then "player" else "players"}`)
         end
         print(`Starting Roblox Studio test server for {table.concat(details, ", ")}...`)
 

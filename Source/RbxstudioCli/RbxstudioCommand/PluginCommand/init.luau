@@ -6,7 +6,7 @@ Opens the plugin installation page for a given plugin ID in Roblox Studio.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
 
@@ -23,7 +23,7 @@ return Commandline.Command.new({
     Impl = function(args, _flags)
         local pluginId = args.pluginid
 
-        print(`Installing plugin {Chalk.dim(pluginId)}...`)
+        print(`Installing plugin {Colors.dim(pluginId)}...`)
 
         StudioHelpers.launch({
             "-task",

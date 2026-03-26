@@ -7,7 +7,7 @@ all running Studio instances.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local process = require("@lune/process")
 
@@ -47,20 +47,18 @@ return Commandline.Command.new({
 
             process.exec("pkill", { "-9", "-f", "RobloxStudio" }, { stdio = "none" })
             print(
-                `Killed {Chalk.bold(Chalk.yellowBright(tostring(count)))} Roblox Studio {if count == 1
-                    then "process"
-                    else "processes"}.`
+                `Killed {Colors.count(tostring(count))} Roblox Studio {if count == 1 then "process" else "processes"}.`
             )
         else
             -- Verify the PID is a Studio process
             local result = process.exec("ps", { "-p", target, "-o", "args=" })
             if not result.ok or not result.stdout:find("RobloxStudio") then
-                print(Chalk.red(`Process {Chalk.bold(target)} is not a Roblox Studio process.`))
+                print(Colors.error(`Process {Colors.bold(target)} is not a Roblox Studio process.`))
                 process.exit(1)
             end
 
             process.exec("kill", { "-9", target }, { stdio = "none" })
-            print(`Killed Roblox Studio process {Chalk.bold(Chalk.yellowBright(target))}.`)
+            print(`Killed Roblox Studio process {Colors.count(target)}.`)
         end
     end,
 })

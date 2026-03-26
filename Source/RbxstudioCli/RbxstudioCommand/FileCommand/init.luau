@@ -7,7 +7,7 @@ opening Rojo project files directly.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
 local fs = require("@lune/fs")
@@ -33,7 +33,7 @@ return Commandline.Command.new({
         local filePath = args.path
 
         if not fs.isFile(filePath) then
-            print(Chalk.red(`File not found {Chalk.bold(filePath)}.`))
+            print(Colors.error(`File not found {Colors.bold(filePath)}.`))
             process.exit(1)
         end
 
@@ -41,11 +41,11 @@ return Commandline.Command.new({
         local isPlace = filePath:match("%.rbxlx?$")
 
         if not isProject and not isPlace then
-            print(Chalk.red("File must be a .rbxl, .rbxlx, or .project.json file."))
+            print(Colors.error("File must be a .rbxl, .rbxlx, or .project.json file."))
             process.exit(1)
         end
 
-        print(`Opening {Chalk.dim(filePath)}...`)
+        print(`Opening {Colors.path(filePath)}...`)
 
         local studioArgs = { "-task", "EditFile" }
 

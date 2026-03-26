@@ -8,7 +8,7 @@ specific revision or navigate to a script within the place.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
 local net = require("@lune/net")
@@ -75,20 +75,20 @@ return Commandline.Command.new({
         -- Resolve universe ID from the Roblox API
         local universeId = getUniverseId(placeId)
         if not universeId then
-            print(Chalk.red(`Failed to resolve universe ID for place {Chalk.bold(placeId)}.`))
+            print(Colors.error(`Failed to resolve universe ID for place {Colors.bold(placeId)}.`))
             process.exit(1)
         end
 
         local task = if version then "EditPlaceRevision" else "EditPlace"
 
-        local details = { `place {Chalk.greenBright(placeId)}` }
+        local details = { `place {Colors.placeId(placeId)}` }
         if version then
-            table.insert(details, `version {Chalk.dim(tostring(version))}`)
+            table.insert(details, `version {Colors.dim(tostring(version))}`)
         end
         if scriptPath then
-            local scriptDetail = `script {Chalk.dim(scriptPath)}`
+            local scriptDetail = `script {Colors.dim(scriptPath)}`
             if line then
-                scriptDetail ..= ` line {Chalk.dim(tostring(line))}`
+                scriptDetail ..= ` line {Colors.dim(tostring(line))}`
             end
             table.insert(details, scriptDetail)
         end

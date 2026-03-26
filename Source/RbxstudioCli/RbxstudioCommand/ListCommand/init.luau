@@ -8,7 +8,7 @@ names from the Roblox API for published places.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local fs = require("@lune/fs")
 local net = require("@lune/net")
@@ -123,10 +123,10 @@ local function formatUptime(etime: string): (string, string)
     local raw = TimeHelpers.formatUptime(etime)
 
     -- Add dim styling to the unit suffixes
-    local colored = raw:gsub("(%d+)d", "%1" .. Chalk.dim("d"))
-        :gsub("(%d+)h", "%1" .. Chalk.dim("h"))
-        :gsub("(%d+)m", "%1" .. Chalk.dim("m"))
-        :gsub("(%d+)s", "%1" .. Chalk.dim("s"))
+    local colored = raw:gsub("(%d+)d", "%1" .. Colors.dim("d"))
+        :gsub("(%d+)h", "%1" .. Colors.dim("h"))
+        :gsub("(%d+)m", "%1" .. Colors.dim("m"))
+        :gsub("(%d+)s", "%1" .. Colors.dim("s"))
 
     return colored, raw
 end
@@ -170,7 +170,7 @@ local function renderTable(headers: { string }, rows: { TableRow })
     -- Build bold header cells
     local boldHeaders = {}
     for _, h in headers do
-        table.insert(boldHeaders, Chalk.bold(h))
+        table.insert(boldHeaders, Colors.bold(h))
     end
 
     print(border("┌", "┬", "┐"))
@@ -205,7 +205,7 @@ return Commandline.Command.new({
 
         local result = process.exec("ps", { "-eo", "pid,etime,args" })
         if not result.ok then
-            print(Chalk.red("Failed to list processes."))
+            print(Colors.error("Failed to list processes."))
             process.exit(1)
         end
 
@@ -262,7 +262,7 @@ return Commandline.Command.new({
         for _, studio in studios do
             local session = studio.session :: SessionInfo
             local rawPlaceId = session.placeId or "nil"
-            local coloredPlaceId = if session.placeId then Chalk.greenBright(session.placeId) else Chalk.dim("nil")
+            local coloredPlaceId = if session.placeId then Colors.placeId(session.placeId) else Colors.nil_("nil")
 
             -- Color the highlight portion of the status. Escape
             -- pattern special characters since highlights may contain
@@ -270,7 +270,7 @@ return Commandline.Command.new({
             local coloredStatus = session.status
             if session.highlight then
                 local escaped = session.highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
-                coloredStatus = coloredStatus:gsub(escaped, Chalk.cyanBright(session.highlight), 1)
+                coloredStatus = coloredStatus:gsub(escaped, Colors.placeName(session.highlight), 1)
             end
 
             table.insert(rows, {
@@ -291,7 +291,7 @@ return Commandline.Command.new({
 
         local count = tostring(#studios)
         print(
-            `There {if #studios == 1 then "is" else "are"} {Chalk.bold(Chalk.yellowBright(count))} Roblox Studio {if #studios
+            `There {if #studios == 1 then "is" else "are"} {Colors.count(count)} Roblox Studio {if #studios
                     == 1
                 then "instance"
                 else "instances"} running.`

@@ -7,7 +7,7 @@ simplest launch mode and equivalent to double-clicking the Studio icon.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
 
@@ -38,7 +38,7 @@ return Commandline.Command.new({
             table.insert(details, "layout reset")
         end
 
-        local suffix = if #details > 0 then ` ({Chalk.dim(table.concat(details, ", "))})` else ""
+        local suffix = if #details > 0 then ` ({Colors.dim(table.concat(details, ", "))})` else ""
         print(`Opening Roblox Studio{suffix}...`)
 
         StudioHelpers.launch(studioArgs)

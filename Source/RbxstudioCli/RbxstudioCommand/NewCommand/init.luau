@@ -8,7 +8,7 @@ enabled for Rojo connectivity.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local ProjectHelpers = require("@rbxstudiocli/Helpers/ProjectHelpers")
 local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
@@ -34,7 +34,7 @@ return Commandline.Command.new({
         local name = args.name
 
         if name then
-            print(`Creating new place {Chalk.dim(name)}...`)
+            print(`Creating new place {Colors.dim(name)}...`)
         else
             print("Creating new temporary place...")
         end

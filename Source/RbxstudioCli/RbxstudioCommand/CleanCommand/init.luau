@@ -7,7 +7,7 @@ a specific place by name or all temporary places at once.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
 local fs = require("@lune/fs")
 local process = require("@lune/process")
@@ -37,11 +37,11 @@ return Commandline.Command.new({
             -- Remove a specific place
             local placePath = TEMP_DIR .. "/" .. target
             if not fs.isDir(placePath) then
-                print(Chalk.red(`Place {Chalk.bold(target)} not found.`))
+                print(Colors.error(`Place {Colors.bold(target)} not found.`))
                 process.exit(1)
             end
             fs.removeDir(placePath)
-            print(`Removed {Chalk.cyanBright(target)}.`)
+            print(`Removed {Colors.fileName(target)}.`)
             return
         end
 
@@ -54,17 +54,13 @@ return Commandline.Command.new({
 
         if target ~= "all" then
             -- No argument — list places and ask
-            print(
-                `Found {Chalk.bold(Chalk.yellowBright(tostring(#entries)))} temporary {if #entries == 1
-                    then "place"
-                    else "places"}.`
-            )
+            print(`Found {Colors.count(tostring(#entries))} temporary {if #entries == 1 then "place" else "places"}.`)
             print()
             for _, entry in entries do
-                print(`  {Chalk.cyanBright(entry)}`)
+                print(`  {Colors.fileName(entry)}`)
             end
             print()
-            print(Chalk.dim('Run "rbxstudio clean all" to remove all, or "rbxstudio clean <name>" to remove one.'))
+            print(Colors.dim('Run "rbxstudio clean all" to remove all, or "rbxstudio clean <name>" to remove one.'))
             return
         end
 
@@ -75,10 +71,6 @@ return Commandline.Command.new({
                 fs.removeDir(entryPath)
             end
         end
-        print(
-            `Removed {Chalk.bold(Chalk.yellowBright(tostring(#entries)))} temporary {if #entries == 1
-                then "place"
-                else "places"}.`
-        )
+        print(`Removed {Colors.count(tostring(#entries))} temporary {if #entries == 1 then "place" else "places"}.`)
     end,
 })
