@@ -13,7 +13,6 @@ local Chalk = require("@packages/Chalk")
 local fs = require("@lune/fs")
 local process = require("@lune/process")
 local t = require("@packages/t")
-local task = require("@lune/task")
 
 local STUDIO_PATHS = {
     macos = "/Applications/RobloxStudio.app",
