@@ -62,8 +62,8 @@ local TEMPLATE_PROJECT = {
     },
 }
 
--- Generates a short random hex ID
-local function generateHexId(): string
+-- Generates a short random hex ID (8 hex characters)
+function ProjectHelpers.generateHexId(): string
     local parts = {}
     for _ = 1, 4 do
         table.insert(parts, string.format("%02x", math.random(0, 255)))
@@ -74,7 +74,7 @@ end
 function ProjectHelpers.createTempPlace(name: string?): string
     assert(t.optional(t.string)(name))
 
-    local placeName = name or `temp-{generateHexId()}`
+    local placeName = name or `temp-{ProjectHelpers.generateHexId()}`
     local tempDir = `{process.env.HOME}/.rbxstudio-cli/temp/{placeName}`
 
     if fs.isDir(tempDir) then
