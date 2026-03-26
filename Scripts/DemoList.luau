@@ -56,7 +56,7 @@ local function formatMemory(rssKb: number): (string, string)
         unit = "kb"
     end
     local colorFn = memoryColor(mb)
-    return colorFn(num) .. Colors.dim(unit), num .. unit
+    return colorFn(num .. " " .. unit), num .. " " .. unit
 end
 
 local function formatUptime(etime: string): (string, string)

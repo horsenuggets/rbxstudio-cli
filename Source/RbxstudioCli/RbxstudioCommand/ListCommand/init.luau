@@ -244,8 +244,8 @@ local function formatMemory(rssKb: number): (string, string)
     end
 
     local colorFn = memoryColor(mb)
-    local colored = colorFn(num) .. Colors.dim(unit)
-    local raw = num .. unit
+    local colored = colorFn(num .. " " .. unit)
+    local raw = num .. " " .. unit
     return colored, raw
 end
 
