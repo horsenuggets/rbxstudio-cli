@@ -13,6 +13,7 @@ local Chalk = require("@packages/Chalk")
 local fs = require("@lune/fs")
 local process = require("@lune/process")
 local t = require("@packages/t")
+local task = require("@lune/task")
 
 local STUDIO_PATHS = {
     macos = "/Applications/RobloxStudio.app",
@@ -150,6 +151,82 @@ function StudioHelpers.launch(args: { string }?)
     end
 
     print(Chalk.greenBright("Roblox Studio launched."))
+
+    -- Poll Studio logs to verify authentication
+    if process.os == "macos" then
+        StudioHelpers._waitForAuth()
+    end
+end
+
+local AUTH_TIMEOUT = 120
+local AUTH_POLL_INTERVAL = 0.5
+local LOG_DIR = process.env.HOME .. "/Library/Logs/Roblox"
+
+-- Finds the most recent Studio log file created after the given
+-- timestamp (unix seconds)
+function StudioHelpers._findLatestLog(afterTime: number): string?
+    if not fs.isDir(LOG_DIR) then
+        return nil
+    end
+
+    local latest: string? = nil
+    local latestTime = 0
+
+    for _, entry in fs.readDir(LOG_DIR) do
+        if entry:match("Studio.*_last%.log$") then
+            local path = LOG_DIR .. "/" .. entry
+            local meta = fs.metadata(path)
+            if meta and meta.createdAt then
+                local created = meta.createdAt.unixTimestampMillis / 1000
+                if created > afterTime and created > latestTime then
+                    latest = path
+                    latestTime = created
+                end
+            end
+        end
+    end
+
+    return latest
+end
+
+-- Polls the Studio log file for authentication status. Waits for
+-- "Authenticated : YES" to confirm successful login. If the cookie
+-- fails, prompts the user to log in manually.
+function StudioHelpers._waitForAuth()
+    local launchTime = os.time() - 2
+    local prompted = false
+    local startTime = os.time()
+
+    while os.time() - startTime < AUTH_TIMEOUT do
+        local logPath = StudioHelpers._findLatestLog(launchTime)
+        if logPath then
+            local content = fs.readFile(logPath)
+
+            if content:find("Authenticated : YES") then
+                if prompted then
+                    print(Chalk.greenBright("Logged in successfully."))
+                end
+                return
+            end
+
+            -- Check if login page is showing (cookie failed)
+            if
+                not prompted
+                and content:find("Authenticated : NO")
+                and not content:find("FetchUserInfo.*status.*true")
+                and content:find("LoginController")
+                and os.time() - startTime > 5
+            then
+                print(Chalk.yellow("Waiting for login... Please log in through Studio."))
+                prompted = true
+            end
+        end
+
+        task.wait(AUTH_POLL_INTERVAL)
+    end
+
+    print(Chalk.red("Login timed out after " .. AUTH_TIMEOUT .. " seconds."))
+    process.exit(1)
 end
 
 return StudioHelpers
