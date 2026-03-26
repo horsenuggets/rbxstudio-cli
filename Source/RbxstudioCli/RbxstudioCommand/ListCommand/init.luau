@@ -266,8 +266,11 @@ local function formatUptime(etime: string): string
     if minutes and minutes > 0 then
         table.insert(parts, `{minutes}m`)
     end
+    if seconds and seconds > 0 then
+        table.insert(parts, `{seconds}s`)
+    end
     if #parts == 0 then
-        table.insert(parts, `{seconds or 0}s`)
+        table.insert(parts, "0s")
     end
 
     return table.concat(parts, " ")
