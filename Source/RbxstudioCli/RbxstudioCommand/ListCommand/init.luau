@@ -100,12 +100,17 @@ local function getLogPath(crashHandlerArgs: string): string?
     return nil
 end
 
+type SessionInfo = {
+    status: string,
+    placeId: string?,
+}
+
 -- Determines what Studio is doing based on its log file. Scans for
 -- the latest session state since the user may switch places, open
 -- new documents, or return to the Start Page after launch.
-local function getSessionInfo(logPath: string): string
+local function getSessionInfo(logPath: string): SessionInfo
     if not fs.isFile(logPath) then
-        return "Unknown"
+        return { status = "Unknown", placeId = nil }
     end
 
     local content = fs.readFile(logPath)
@@ -157,28 +162,34 @@ local function getSessionInfo(logPath: string): string
     local latestPos = math.max(lastTeamCreatePos, lastTaskPos, lastStartPagePos)
 
     if latestPos == 0 then
-        return "Unknown"
+        return { status = "Unknown", placeId = nil }
     end
 
     if latestPos == lastStartPagePos and lastStartPagePos > lastTaskPos then
-        return "Start Page"
+        return { status = "Start Page", placeId = nil }
     end
 
     if latestPos == lastTeamCreatePos and lastTeamCreatePlace then
         local name = getPlaceName(lastTeamCreatePlace)
         if name then
-            return `Team Create ({name})`
+            return {
+                status = `Team Create ({name})`,
+                placeId = lastTeamCreatePlace,
+            }
         end
-        return `Team Create (place {lastTeamCreatePlace})`
+        return {
+            status = "Team Create",
+            placeId = lastTeamCreatePlace,
+        }
     end
 
     if lastTask == "EditFile" then
         local filePath = content:match("%-localPlaceFile%s+(%S+)")
         if filePath then
             local fileName = filePath:match("([^/\\]+)$") or filePath
-            return `Editing {fileName}`
+            return { status = `Editing {fileName}`, placeId = nil }
         end
-        return "Editing local file"
+        return { status = "Editing local file", placeId = nil }
     end
 
     if lastTask == "EditPlace" or lastTask == "EditPlaceRevision" then
@@ -191,19 +202,21 @@ local function getSessionInfo(logPath: string): string
         if lastPlaceId then
             local name = getPlaceName(lastPlaceId)
             if name then
-                return `Editing {name}`
+                return { status = `Editing {name}`, placeId = lastPlaceId }
             end
-            return `Editing place {lastPlaceId}`
+            return {
+                status = "Editing place",
+                placeId = lastPlaceId,
+            }
         end
-        return "Editing place"
+        return { status = "Editing place", placeId = nil }
     end
 
-    -- Generic new document (Cmd+N creates a Baseplate)
     if lastTask then
-        return "Editing new place"
+        return { status = "Editing new place", placeId = nil }
     end
 
-    return "Unknown"
+    return { status = "Unknown", placeId = nil }
 end
 
 ------------------------------------------------------------------------------------------
@@ -222,33 +235,32 @@ local function renderTable(headers: { string }, rows: { { string } })
         end
     end
 
-    -- Build horizontal border
-    local borderParts = {}
-    for i, w in widths do
-        table.insert(borderParts, string.rep("─", w + 2))
+    local function border(left: string, mid: string, right: string): string
+        local parts = {}
+        for i, w in widths do
+            table.insert(parts, string.rep("─", w + 2))
+        end
+        return Chalk.dim(left .. table.concat(parts, mid) .. right)
     end
-    local topBorder = "┌" .. table.concat(borderParts, "┬") .. "┐"
-    local midBorder = "├" .. table.concat(borderParts, "┼") .. "┤"
-    local botBorder = "└" .. table.concat(borderParts, "┴") .. "┘"
 
-    -- Build a row string
-    local function formatRow(cells: { string }): string
+    local function formatRow(cells: { string }, colorFn: ((string) -> string)?): string
         local parts = {}
         for i, cell in cells do
             local padding = string.rep(" ", (widths[i] or 0) - #cell)
-            table.insert(parts, " " .. cell .. padding .. " ")
+            local text = if colorFn then colorFn(cell) else cell
+            local pad = if colorFn then colorFn(padding) else padding
+            table.insert(parts, ` {text}{pad} `)
         end
-        return "│" .. table.concat(parts, "│") .. "│"
+        return Chalk.dim("│") .. table.concat(parts, Chalk.dim("│")) .. Chalk.dim("│")
     end
 
-    -- Print the table
-    print(topBorder)
-    print(formatRow(headers))
-    print(midBorder)
+    print(border("┌", "┬", "┐"))
+    print(formatRow(headers, Chalk.bold))
+    print(border("├", "┼", "┤"))
     for _, row in rows do
         print(formatRow(row))
     end
-    print(botBorder)
+    print(border("└", "┴", "┘"))
 end
 
 ------------------------------------------------------------------------------------------
@@ -259,7 +271,7 @@ type StudioProcess = {
     pid: string,
     uptime: string,
     logPath: string?,
-    status: string?,
+    session: SessionInfo?,
 }
 
 return Commandline.Command.new({
@@ -291,7 +303,7 @@ return Commandline.Command.new({
                     pid = pid,
                     uptime = etime,
                     logPath = nil,
-                    status = nil,
+                    session = nil,
                 })
             end
         end
@@ -318,21 +330,30 @@ return Commandline.Command.new({
 
         -- Gather session info for all processes
         for _, studio in studios do
-            studio.status = if studio.logPath then getSessionInfo(studio.logPath) else "Unknown"
+            studio.session = if studio.logPath
+                then getSessionInfo(studio.logPath)
+                else { status = "Unknown", placeId = nil }
         end
 
         -- Build table rows
         local rows: { { string } } = {}
         for _, studio in studios do
+            local session = studio.session :: SessionInfo
             table.insert(rows, {
                 studio.pid,
                 studio.uptime,
-                studio.status or "Unknown",
+                session.placeId or "nil",
+                session.status,
             })
         end
 
-        print(`{#studios} {if #studios == 1 then "instance" else "instances"} running.`)
+        local count = tostring(#studios)
+        print(
+            `There {if #studios == 1 then "is" else "are"} {Chalk.bold(count)} Roblox Studio {if #studios == 1
+                then "instance"
+                else "instances"} running.`
+        )
         print()
-        renderTable({ "PID", "Uptime", "Status" }, rows)
+        renderTable({ "PID", "Uptime", "Place ID", "Status" }, rows)
     end,
 })
