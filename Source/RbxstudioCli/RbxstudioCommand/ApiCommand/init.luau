@@ -26,7 +26,9 @@ return Commandline.Command.new({
     Impl = function(args, _flags)
         local output = args.output
 
-        print(`Dumping Luau API to {Chalk.cyanBright(output)}...`)
+        local outputDir = output:match("^(.*/)") or ""
+        local outputFile = output:match("([^/]+)$") or output
+        print(`Dumping Luau API to {Chalk.dim(outputDir)}{Chalk.yellow(outputFile)}...`)
 
         StudioHelpers.launch({
             "-API",
