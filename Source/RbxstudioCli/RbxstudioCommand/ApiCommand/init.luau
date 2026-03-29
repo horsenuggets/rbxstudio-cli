@@ -43,7 +43,7 @@ return Commandline.Command.new({
 
         local outputDir = output:match("^(.*/)") or ""
         local outputFile = output:match("([^/]+)$") or output
-        print(`Dumping Luau API to {Colors.path(outputDir)}{Colors.configFile(outputFile)}...`)
+        print(`Dumping Luau API to {Colors.path(outputDir)}{Colors.projectName(outputFile)}...`)
 
         StudioHelpers.launch({
             "-API",

@@ -22,9 +22,9 @@ Colors.warning = Chalk.yellow
 
 -- Data values
 Colors.numericId = Chalk.hex("#96cc22")
-Colors.placeName = Chalk.cyanBright
-Colors.fileName = Chalk.cyanBright
-Colors.configFile = Chalk.hex("#cc7722")
+Colors.projectName = function(text: string): string
+    return Chalk.bold(Chalk.cyanBright(text))
+end
 Colors.count = function(text: string): string
     return Chalk.bold(Chalk.yellowBright(text))
 end

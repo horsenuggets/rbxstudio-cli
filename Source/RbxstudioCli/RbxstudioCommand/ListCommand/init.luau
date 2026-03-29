@@ -214,7 +214,7 @@ return Commandline.Command.new({
             local coloredStatus = session.status
             if session.highlight then
                 local escaped = session.highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
-                coloredStatus = coloredStatus:gsub(escaped, Colors.placeName(session.highlight), 1)
+                coloredStatus = coloredStatus:gsub(escaped, Colors.projectName(session.highlight), 1)
             end
 
             table.insert(rows, {
