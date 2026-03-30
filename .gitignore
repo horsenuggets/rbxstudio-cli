@@ -20,3 +20,8 @@ TESTING.md
 /TODO.md
 Tools
 __VERSION__.luau
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
