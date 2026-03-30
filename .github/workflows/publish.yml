@@ -52,9 +52,13 @@ jobs:
         env:
           WALLY_AUTH: ${{ secrets.WALLY_AUTH }}
         run: |
-          mkdir -p ~/.wally
-          echo "$WALLY_AUTH" > ~/.wally/auth.toml
-          wally publish
+          if grep -q 'private = true' wally.toml; then
+            echo "Skipping Wally publish for private package."
+          else
+            mkdir -p ~/.wally
+            echo "$WALLY_AUTH" > ~/.wally/auth.toml
+            wally publish
+          fi
 
       - name: Create GitHub release
         env:
