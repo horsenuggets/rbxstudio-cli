@@ -54,6 +54,9 @@ jobs:
       - name: Install dependencies
         run: wally install
 
+      - name: Setup Lune typedefs
+        run: lune setup --no-update-luaurc
+
       - name: Run static analysis
         run: ./Submodules/luau-cicd/Scripts/RunStaticAnalysis.luau lune
 

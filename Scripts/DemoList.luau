@@ -112,7 +112,7 @@ local function demoList()
         local coloredStatus = entry.status
         if entry.highlight then
             local escaped = entry.highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
-            coloredStatus = coloredStatus:gsub(escaped, Colors.placeName(entry.highlight), 1)
+            coloredStatus = coloredStatus:gsub(escaped, Colors.projectName(entry.highlight), 1)
         end
 
         table.insert(rows, {
