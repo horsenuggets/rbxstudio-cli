@@ -1,10 +1,9 @@
 # Changelog
 
-## 0.0.2
-- Renamed "open" command to "start"
-- Added new "open" command for opening places by file path or place ID
-- Removed "server", "file", and "clean" commands
-- Temporary places now auto-clean after 7 days
-
 ## 0.0.1
-- Initial release
+- Consolidate commands into open and start with place ID and file path support
+- Add auto-cleanup for stale temp places as detached background process
+- Add shell completion generation and install scripts for zsh and PowerShell
+- Bump commandline-luau to 0.0.15 and lune to 0.10.4-horse.14.2
+- Add lune setup and version generation steps to CI
+- Gitignore generated __VERSION__.luau
