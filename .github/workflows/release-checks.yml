@@ -6,20 +6,6 @@ on:
       - release
 
 jobs:
-  secrets:
-    name: Validate secrets
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check WALLY_AUTH exists
-        env:
-          WALLY_AUTH: ${{ secrets.WALLY_AUTH }}
-        run: |
-          if [ -z "$WALLY_AUTH" ]; then
-            echo "::error::WALLY_AUTH secret is not configured. Run: gh secret set WALLY_AUTH < ~/.wally/auth.toml"
-            exit 1
-          fi
-          echo "WALLY_AUTH is configured."
-
   pr-title:
     name: Validate PR title
     runs-on: ubuntu-latest
@@ -29,7 +15,6 @@ jobs:
           TITLE="${{ github.event.pull_request.title }}"
           echo "Checking PR title: $TITLE"
 
-          # Must be exactly "Release X.Y.Z"
           if [[ ! "$TITLE" =~ ^Release\ [0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::PR title must be exactly 'Release X.Y.Z' (e.g., 'Release 1.2.3')"
             exit 1
@@ -50,7 +35,6 @@ jobs:
         run: |
           git fetch origin main
 
-          # Get the diff between the PR branch and main
           DIFF=$(git diff origin/main..HEAD)
 
           if [ -n "$DIFF" ]; then
@@ -113,8 +97,34 @@ jobs:
       - name: Setup Lune typedefs
         run: lune setup --no-update-luaurc
 
+      - name: Generate version module
+        run: ./Scripts/GenerateVersion.luau
+
       - name: Run static analysis
         run: ./Submodules/luau-cicd/Scripts/RunStaticAnalysis.luau lune
+
+  json-format:
+    name: Check JSON format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Prettier
+        run: npm install -g prettier
+
+      - name: Setup Rokit
+        uses: CompeyDev/setup-rokit@v0.1.2
+
+      - name: Check JSON format
+        run: ./Submodules/luau-cicd/Scripts/CheckJsonFormat.luau
 
   version:
     name: Validate version
