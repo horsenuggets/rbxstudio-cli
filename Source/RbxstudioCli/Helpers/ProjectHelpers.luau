@@ -97,6 +97,9 @@ function ProjectHelpers.createTempPlace(name: string?): string
         fs.writeDir(tempDir)
     end
 
+    -- Write a timestamp file for auto-cleanup
+    fs.writeFile(`{tempDir}/.created`, tostring(os.time()))
+
     local projectPath = `{tempDir}/default.project.json`
     local outputPath = `{tempDir}/{placeName}.rbxl`
 
@@ -108,7 +111,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
     local displayPath = ProjectHelpers.tildify(projectPath)
     local projectDir = displayPath:match("^(.*/)") or ""
     local projectFile = displayPath:match("([^/]+)$") or displayPath
-    print(`Created project at {Colors.path(projectDir)}{Colors.configFile(projectFile)}.`)
+    print(`Created project at {Colors.path(projectDir)}{Colors.projectName(projectFile)}.`)
 
     -- Build the place file with Rojo
     local result = process.exec("rojo", {
@@ -127,7 +130,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
     local displayOutput = ProjectHelpers.tildify(outputPath)
     local outputDir = displayOutput:match("^(.*/)") or ""
     local outputFile = displayOutput:match("([^/]+)$") or displayOutput
-    print(`Built place at {Colors.path(outputDir)}{Colors.fileName(outputFile)}.`)
+    print(`Built place at {Colors.path(outputDir)}{Colors.projectName(outputFile)}.`)
     return outputPath
 end
 

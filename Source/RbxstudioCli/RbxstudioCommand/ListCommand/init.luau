@@ -75,7 +75,7 @@ local function getPlaceName(placeId: string): string?
     })
 
     if ok and response.ok then
-        local success, data = pcall(serde.decode, "json", response.body)
+        local success, data = pcall(serde.decode, "json" :: "json", response.body)
         if success and type(data) == "table" and #data > 0 then
             local name = data[1].name
             if name then
@@ -214,7 +214,7 @@ return Commandline.Command.new({
             local coloredStatus = session.status
             if session.highlight then
                 local escaped = session.highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
-                coloredStatus = coloredStatus:gsub(escaped, Colors.placeName(session.highlight), 1)
+                coloredStatus = coloredStatus:gsub(escaped, Colors.projectName(session.highlight), 1)
             end
 
             table.insert(rows, {
