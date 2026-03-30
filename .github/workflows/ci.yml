@@ -19,7 +19,7 @@ jobs:
         uses: CompeyDev/setup-rokit@v0.1.2
 
       - name: Check formatting
-        run: lune run ./Submodules/luau-cicd/Scripts/CheckFormatting.luau
+        run: ./Submodules/luau-cicd/Scripts/CheckFormatting.luau
 
   test:
     name: Run tests
@@ -37,7 +37,7 @@ jobs:
         run: wally install
 
       - name: Run tests
-        run: lune run ./Scripts/RunTests.luau
+        run: ./Scripts/RunTests.luau
 
   analyze:
     name: Static analysis
@@ -55,7 +55,7 @@ jobs:
         run: wally install
 
       - name: Run static analysis
-        run: lune run ./Submodules/luau-cicd/Scripts/RunStaticAnalysis.luau lune
+        run: ./Submodules/luau-cicd/Scripts/RunStaticAnalysis.luau lune
 
   version-match:
     name: Check version match
@@ -70,4 +70,4 @@ jobs:
         uses: CompeyDev/setup-rokit@v0.1.2
 
       - name: Check version match
-        run: lune run ./Submodules/luau-cicd/Scripts/CheckVersionMatch.luau
+        run: ./Submodules/luau-cicd/Scripts/CheckVersionMatch.luau
