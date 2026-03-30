@@ -57,6 +57,9 @@ jobs:
       - name: Setup Lune typedefs
         run: lune setup --no-update-luaurc
 
+      - name: Generate version module
+        run: ./Scripts/GenerateVersion.luau
+
       - name: Run static analysis
         run: ./Submodules/luau-cicd/Scripts/RunStaticAnalysis.luau lune
 

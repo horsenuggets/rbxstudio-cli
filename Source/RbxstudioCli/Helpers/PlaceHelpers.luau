@@ -69,7 +69,7 @@ function PlaceHelpers.getUniverseId(placeId: string): string?
     })
 
     if ok and response.ok then
-        local success, data = pcall(serde.decode, "json", response.body)
+        local success, data = pcall(serde.decode, "json" :: "json", response.body)
         if success and data and data.universeId then
             return tostring(data.universeId)
         end
@@ -91,7 +91,7 @@ function PlaceHelpers.getPlaceName(placeId: string): string?
     })
 
     if ok and response.ok then
-        local success, data = pcall(serde.decode, "json", response.body)
+        local success, data = pcall(serde.decode, "json" :: "json", response.body)
         if success and type(data) == "table" and #data > 0 then
             return data[1].name
         end
