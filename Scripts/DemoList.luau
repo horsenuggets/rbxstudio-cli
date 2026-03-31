@@ -27,7 +27,7 @@ type MockEntry = {
 local MOCK_DATA: { MockEntry } = {
     { Pid = "10001", Memory = 384 * 1024, Uptime = "02:15", PlaceId = nil, Status = "Start Page", Highlight = nil },
     {
-        pid = "10002",
+        Pid = "10002",
         Memory = 620 * 1024,
         Uptime = "05:30",
         PlaceId = nil,
@@ -35,7 +35,7 @@ local MOCK_DATA: { MockEntry } = {
         Highlight = "temp-a1b2c3d4.rbxl",
     },
     {
-        pid = "10003",
+        Pid = "10003",
         Memory = 890 * 1024,
         Uptime = "12:45",
         PlaceId = "13435539729",
@@ -43,7 +43,7 @@ local MOCK_DATA: { MockEntry } = {
         Highlight = "Plugin Sandbox",
     },
     {
-        pid = "10004",
+        Pid = "10004",
         Memory = 1200 * 1024,
         Uptime = "01:30:00",
         PlaceId = "85939162614693",
@@ -51,7 +51,7 @@ local MOCK_DATA: { MockEntry } = {
         Highlight = "test game :)",
     },
     {
-        pid = "10005",
+        Pid = "10005",
         Memory = 2048 * 1024,
         Uptime = "02:15:30",
         PlaceId = "9430488623",
@@ -59,7 +59,7 @@ local MOCK_DATA: { MockEntry } = {
         Highlight = "My Obby",
     },
     {
-        pid = "10006",
+        Pid = "10006",
         Memory = 3200 * 1024,
         Uptime = "03:45:12",
         PlaceId = nil,
@@ -67,7 +67,7 @@ local MOCK_DATA: { MockEntry } = {
         Highlight = nil,
     },
     {
-        pid = "10007",
+        Pid = "10007",
         Memory = 4500 * 1024,
         Uptime = "05:00:00",
         PlaceId = "1234567890",
@@ -75,7 +75,7 @@ local MOCK_DATA: { MockEntry } = {
         Highlight = "Big RPG World",
     },
     {
-        pid = "10008",
+        Pid = "10008",
         Memory = 5800 * 1024,
         Uptime = "1-02:30:15",
         PlaceId = "9876543210",
@@ -83,7 +83,7 @@ local MOCK_DATA: { MockEntry } = {
         Highlight = "Massive Game",
     },
     {
-        pid = "10009",
+        Pid = "10009",
         Memory = 6500 * 1024,
         Uptime = "2-12:00:00",
         PlaceId = "5555555555",
@@ -91,7 +91,7 @@ local MOCK_DATA: { MockEntry } = {
         Highlight = "Memory Hog",
     },
     {
-        pid = "10010",
+        Pid = "10010",
         Memory = 8192 * 1024,
         Uptime = "3-06:45:30",
         PlaceId = "1111111111",
