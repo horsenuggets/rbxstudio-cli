@@ -16,4 +16,16 @@ provider "github" {
 module "repo" {
   source     = "../Submodules/luau-cicd/Terraform/Modules/CommandlineCli"
   repository = "rbxstudio-cli"
+
+  extra_main_checks = [
+    "Test install on linux",
+    "Test install on macos",
+    "Test install on windows",
+  ]
+
+  extra_release_checks = [
+    "Test install on linux",
+    "Test install on macos",
+    "Test install on windows",
+  ]
 }
