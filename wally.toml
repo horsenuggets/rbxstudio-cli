@@ -1,7 +1,7 @@
 [package]
 name = "horsenuggets/rbxstudio-cli"
 description = "A feature-rich CLI for launching Roblox Studio with various configurations."
-version = "1.0.0"
+version = "1.0.1"
 private = true
 license = "MIT"
 realm = "shared"

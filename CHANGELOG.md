@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+- Add install and update subcommands using shared Toolkit from commandline-luau 0.2.0
+- Users can run "rbxstudio install" for global installation and "rbxstudio update" for self-updating
+- Update shell completions to include install and update commands
+
 ## 1.0.0
 - Standardize CI workflows with cross-platform builds and artifact uploads
 - Add per-repo Terraform config for branch protection
