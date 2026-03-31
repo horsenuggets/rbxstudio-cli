@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.2
+- Add one-liner install scripts for macOS, Linux, and Windows
+- Add test-install and test-install-scripts CI workflows
+- Add comprehensive README with installation instructions and command reference
+- Use Toolkit.build for cross-platform require patching in compiled binaries
+- Add test-install checks to branch protection
+- Fix DemoList mock data PascalCase keys and StudioHelpers Windows crash
+
 ## 1.0.1
 - Add install and update subcommands using shared Toolkit from commandline-luau 0.2.0
 - Users can run "rbxstudio install" for global installation and "rbxstudio update" for self-updating

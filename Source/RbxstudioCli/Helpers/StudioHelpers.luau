@@ -163,7 +163,7 @@ end
 
 local AUTH_TIMEOUT = 120
 local AUTH_POLL_INTERVAL = 0.5
-local LOG_DIR = process.env.HOME .. "/Library/Logs/Roblox"
+local LOG_DIR = if process.env.HOME then process.env.HOME .. "/Library/Logs/Roblox" else ""
 
 -- Finds the most recent Studio log file created after the given
 -- timestamp (unix seconds)

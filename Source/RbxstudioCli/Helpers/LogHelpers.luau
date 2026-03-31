@@ -11,9 +11,9 @@ doing based on log entries.
 local LogHelpers = {}
 
 export type SessionInfo = {
-    status: string,
-    placeId: string?,
-    highlight: string?,
+    Status: string,
+    PlaceId: string?,
+    Highlight: string?,
 }
 
 -- Parses log content to determine what Studio is doing. Scans for
@@ -84,22 +84,22 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     local latestPos = math.max(lastTeamCreatePos, lastTaskPos, lastStartPagePos)
 
     -- Helpers to reduce repetition in return values
-    local NEW_PLACE: SessionInfo = { status = "Edit (New place)", placeId = nil, highlight = nil }
+    local NEW_PLACE: SessionInfo = { Status = "Edit (New place)", PlaceId = nil, Highlight = nil }
 
     local function makeResult(prefix: string, id: string?, name: string?): SessionInfo
         return {
-            status = if name then `{prefix} ({name})` else prefix,
-            placeId = id,
-            highlight = name,
+            Status = if name then `{prefix} ({name})` else prefix,
+            PlaceId = id,
+            Highlight = name,
         }
     end
 
     if latestPos == 0 then
-        return { status = "Unknown", placeId = nil, highlight = nil }
+        return { Status = "Unknown", PlaceId = nil, Highlight = nil }
     end
 
     if latestPos == lastStartPagePos and lastStartPagePos > lastTaskPos then
-        return { status = "Start Page", placeId = nil, highlight = nil }
+        return { Status = "Start Page", PlaceId = nil, Highlight = nil }
     end
 
     if latestPos == lastTeamCreatePos and lastTeamCreatePlace then
@@ -160,7 +160,7 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
         return NEW_PLACE
     end
 
-    return { status = "Unknown", placeId = nil, highlight = nil }
+    return { Status = "Unknown", PlaceId = nil, Highlight = nil }
 end
 
 return LogHelpers

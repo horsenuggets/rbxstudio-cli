@@ -12,8 +12,8 @@ local Colors = require("@rbxstudiocli/Helpers/Colors")
 local TableHelpers = {}
 
 export type TableRow = {
-    raw: { string },
-    colored: { string },
+    Raw: { string },
+    Colored: { string },
 }
 
 function TableHelpers.render(headers: { string }, rows: { TableRow })
@@ -23,7 +23,7 @@ function TableHelpers.render(headers: { string }, rows: { TableRow })
         widths[i] = #header
     end
     for _, row in rows do
-        for i, cell in row.raw do
+        for i, cell in row.Raw do
             widths[i] = math.max(widths[i] or 0, #cell)
         end
     end
@@ -55,7 +55,7 @@ function TableHelpers.render(headers: { string }, rows: { TableRow })
     print(formatCells(boldHeaders, headers))
     print(border("├", "┼", "┤"))
     for _, row in rows do
-        print(formatCells(row.colored, row.raw))
+        print(formatCells(row.Colored, row.Raw))
     end
     print(border("└", "┴", "┘"))
 end

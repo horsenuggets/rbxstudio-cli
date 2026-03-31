@@ -105,7 +105,7 @@ type SessionInfo = LogHelpers.SessionInfo
 
 local function getSessionInfo(logPath: string): SessionInfo
     if not fs.isFile(logPath) then
-        return { status = "Unknown", placeId = nil, highlight = nil }
+        return { Status = "Unknown", PlaceId = nil, Highlight = nil }
     end
     local content = fs.readFile(logPath)
     return LogHelpers.parseSessionInfo(content, getPlaceName)
@@ -198,34 +198,34 @@ return Commandline.Command.new({
         for _, studio in studios do
             studio.session = if studio.logPath
                 then getSessionInfo(studio.logPath)
-                else { status = "Unknown", placeId = nil }
+                else { Status = "Unknown", PlaceId = nil }
         end
 
         -- Build table rows with colored and raw versions
         local rows: { TableRow } = {}
         for _, studio in studios do
             local session = studio.session :: SessionInfo
-            local rawPlaceId = session.placeId or "nil"
-            local coloredPlaceId = if session.placeId then Colors.numericId(session.placeId) else Colors.nil_("nil")
+            local rawPlaceId = session.PlaceId or "nil"
+            local coloredPlaceId = if session.PlaceId then Colors.numericId(session.PlaceId) else Colors.nil_("nil")
 
             -- Color the highlight portion of the status. Escape
             -- pattern special characters since highlights may contain
             -- dots, dashes, etc.
-            local coloredStatus = session.status
-            if session.highlight then
-                local escaped = session.highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
-                coloredStatus = coloredStatus:gsub(escaped, Colors.projectName(session.highlight), 1)
+            local coloredStatus = session.Status
+            if session.Highlight then
+                local escaped = session.Highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
+                coloredStatus = coloredStatus:gsub(escaped, Colors.projectName(session.Highlight), 1)
             end
 
             table.insert(rows, {
-                raw = {
+                Raw = {
                     studio.pid,
                     studio.memoryRaw,
                     studio.uptimeRaw,
                     rawPlaceId,
-                    session.status,
+                    session.Status,
                 },
-                colored = {
+                Colored = {
                     studio.pid,
                     studio.memory,
                     studio.uptime,

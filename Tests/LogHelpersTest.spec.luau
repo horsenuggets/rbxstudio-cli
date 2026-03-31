@@ -12,9 +12,9 @@ return function()
     describe("parseSessionInfo", function()
         it("should return Unknown for empty content", function()
             local result = LogHelpers.parseSessionInfo("")
-            expect(result.status).to.equal("Unknown")
-            expect(result.placeId).to.equal(nil)
-            expect(result.highlight).to.equal(nil)
+            expect(result.Status).to.equal("Unknown")
+            expect(result.PlaceId).to.equal(nil)
+            expect(result.Highlight).to.equal(nil)
         end)
 
         it("should detect Start Page", function()
@@ -22,8 +22,8 @@ return function()
 2026-03-26T17:04:46.914Z Info showStartPageWidgets
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Start Page")
-            expect(result.placeId).to.equal(nil)
+            expect(result.Status).to.equal("Start Page")
+            expect(result.PlaceId).to.equal(nil)
         end)
 
         it("should detect EditFile with local place file", function()
@@ -33,9 +33,9 @@ Command line:
 Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit (my-game.rbxl)")
-            expect(result.placeId).to.equal(nil)
-            expect(result.highlight).to.equal("my-game.rbxl")
+            expect(result.Status).to.equal("Edit (my-game.rbxl)")
+            expect(result.PlaceId).to.equal(nil)
+            expect(result.Highlight).to.equal("my-game.rbxl")
         end)
 
         it("should detect EditFile without local place file path", function()
@@ -43,8 +43,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditFile
 Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit (local file)")
-            expect(result.placeId).to.equal(nil)
+            expect(result.Status).to.equal("Edit (local file)")
+            expect(result.PlaceId).to.equal(nil)
         end)
 
         it("should detect EditPlace with place ID", function()
@@ -54,8 +54,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 9430488623
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit")
-            expect(result.placeId).to.equal("9430488623")
+            expect(result.Status).to.equal("Edit")
+            expect(result.PlaceId).to.equal("9430488623")
         end)
 
         it("should resolve EditPlace with place name via callback", function()
@@ -69,9 +69,9 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
                 end
                 return nil
             end)
-            expect(result.status).to.equal("Edit (My Cool Game)")
-            expect(result.placeId).to.equal("12345")
-            expect(result.highlight).to.equal("My Cool Game")
+            expect(result.Status).to.equal("Edit (My Cool Game)")
+            expect(result.PlaceId).to.equal("12345")
+            expect(result.Highlight).to.equal("My Cool Game")
         end)
 
         it("should detect EditPlaceRevision", function()
@@ -80,8 +80,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlaceRevision
 [telemetryLog] placeid: 5555
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit")
-            expect(result.placeId).to.equal("5555")
+            expect(result.Status).to.equal("Edit")
+            expect(result.PlaceId).to.equal("5555")
         end)
 
         it("should detect Team Create with place ID", function()
@@ -90,8 +90,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditFile
 Info TeamCreateJoinPayload Joining game abc place 13435539729 at server
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Team Create")
-            expect(result.placeId).to.equal("13435539729")
+            expect(result.Status).to.equal("Team Create")
+            expect(result.PlaceId).to.equal("13435539729")
         end)
 
         it("should resolve Team Create place name via callback", function()
@@ -104,9 +104,9 @@ Info TeamCreateJoinPayload Joining game abc place 99999 at server
                 end
                 return nil
             end)
-            expect(result.status).to.equal("Team Create (Plugin Sandbox)")
-            expect(result.placeId).to.equal("99999")
-            expect(result.highlight).to.equal("Plugin Sandbox")
+            expect(result.Status).to.equal("Team Create (Plugin Sandbox)")
+            expect(result.PlaceId).to.equal("99999")
+            expect(result.Highlight).to.equal("Plugin Sandbox")
         end)
 
         it("should skip zero place IDs", function()
@@ -116,8 +116,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 0
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit")
-            expect(result.placeId).to.equal(nil)
+            expect(result.Status).to.equal("Edit")
+            expect(result.PlaceId).to.equal(nil)
         end)
 
         it("should use the last non-zero place ID", function()
@@ -129,7 +129,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 0
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.placeId).to.equal("222")
+            expect(result.PlaceId).to.equal("222")
         end)
 
         it("should detect returning to Start Page after editing", function()
@@ -139,7 +139,7 @@ Info lots of other stuff happening here
 Info showStartPageWidgets
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Start Page")
+            expect(result.Status).to.equal("Start Page")
         end)
 
         it("should detect new task after Start Page", function()
@@ -150,7 +150,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditFile
 -localPlaceFile /path/to/game.rbxl
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit (game.rbxl)")
+            expect(result.Status).to.equal("Edit (game.rbxl)")
         end)
 
         it("should detect Team Create overriding EditFile", function()
@@ -159,8 +159,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditFile
 Info TeamCreateJoinPayload Joining game x place 7777 at server
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Team Create")
-            expect(result.placeId).to.equal("7777")
+            expect(result.Status).to.equal("Team Create")
+            expect(result.PlaceId).to.equal("7777")
         end)
 
         it("should use last Team Create if multiple joins", function()
@@ -169,7 +169,7 @@ Info TeamCreateJoinPayload Joining game a place 1111 at server
 Info TeamCreateJoinPayload Joining game b place 2222 at server
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.placeId).to.equal("2222")
+            expect(result.PlaceId).to.equal("2222")
         end)
 
         it("should use last task if multiple opens", function()
@@ -179,8 +179,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 8888
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit")
-            expect(result.placeId).to.equal("8888")
+            expect(result.Status).to.equal("Edit")
+            expect(result.PlaceId).to.equal("8888")
         end)
 
         it("should detect generic new place for unknown tasks", function()
@@ -188,8 +188,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 Info PlaceManager::createAndShowIDEDoc with task NewDocument
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit (New place)")
-            expect(result.placeId).to.equal(nil)
+            expect(result.Status).to.equal("Edit (New place)")
+            expect(result.PlaceId).to.equal(nil)
         end)
 
         it("should extract filename from Windows-style paths", function()
@@ -198,7 +198,7 @@ Info PlaceManager::createAndShowIDEDoc with task NewDocument
 Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.highlight).to.equal("game.rbxl")
+            expect(result.Highlight).to.equal("game.rbxl")
         end)
 
         it("should handle log content with no relevant patterns", function()
@@ -207,7 +207,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditFile
 2026-03-26T17:04:46.915Z Info another random log line
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Unknown")
+            expect(result.Status).to.equal("Unknown")
         end)
 
         it("should detect published place from new place", function()
@@ -226,9 +226,9 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
                 end
                 return nil
             end)
-            expect(result.status).to.equal("Edit (test game :))")
-            expect(result.placeId).to.equal("85939162614693")
-            expect(result.highlight).to.equal("test game :)")
+            expect(result.Status).to.equal("Edit (test game :))")
+            expect(result.PlaceId).to.equal("85939162614693")
+            expect(result.Highlight).to.equal("test game :)")
         end)
 
         it("should detect new unsaved place with inherited place ID", function()
@@ -240,8 +240,8 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] universeid: 0
             ]]
             local result = LogHelpers.parseSessionInfo(content)
-            expect(result.status).to.equal("Edit (New place)")
-            expect(result.placeId).to.equal(nil)
+            expect(result.Status).to.equal("Edit (New place)")
+            expect(result.PlaceId).to.equal(nil)
         end)
     end)
 end
