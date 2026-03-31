@@ -1,0 +1,85 @@
+name: Test install command
+
+on:
+  pull_request:
+    branches:
+      - main
+      - release
+  workflow_dispatch:
+
+jobs:
+  test-install:
+    name: Test install on ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-latest
+            target: linux-x86_64
+          - os: macos
+            runner: macos-latest
+            target: macos-aarch64
+          - os: windows
+            runner: windows-latest
+            target: windows-x86_64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Rokit
+        uses: CompeyDev/setup-rokit@v0.1.2
+
+      - name: Install dependencies
+        run: wally install
+
+      - name: Build executable
+        run: ./Scripts/BuildExecutable.luau ${{ matrix.target }}
+
+      - name: Test install command (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x Build/rbxstudio
+          export PATH="$PWD/Build:$PATH"
+          rbxstudio install
+
+          # Verify installation
+          if [ ! -f "$HOME/.rbxstudio-cli/bin/rbxstudio" ]; then
+            echo "Executable not found at expected location."
+            exit 1
+          fi
+
+          echo "Installation successful."
+          ls -la "$HOME/.rbxstudio-cli/bin/"
+
+      - name: Test install command (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:PATH = "$PWD\Build;$env:PATH"
+          rbxstudio install
+
+          # Verify installation
+          $installPath = "$env:USERPROFILE\.rbxstudio-cli\bin\rbxstudio.exe"
+          if (-not (Test-Path $installPath)) {
+            Write-Error "Executable not found at expected location."
+            exit 1
+          }
+
+          Write-Host "Installation successful."
+          Get-ChildItem "$env:USERPROFILE\.rbxstudio-cli\bin\"
+
+      - name: Verify installed executable runs (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          "$HOME/.rbxstudio-cli/bin/rbxstudio" --help
+
+      - name: Verify installed executable runs (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & "$env:USERPROFILE\.rbxstudio-cli\bin\rbxstudio.exe" --help
