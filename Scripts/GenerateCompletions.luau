@@ -36,6 +36,10 @@ local rootCommand = Commandline.Command.new({
             },
         }),
         Commandline.Command.new({
+            Name = "install",
+            Description = "Install rbxstudio CLI to ~/.rbxstudio-cli and add to PATH.",
+        }),
+        Commandline.Command.new({
             Name = "kill",
             Description = "Kill Roblox Studio processes.",
             Args = {
@@ -115,6 +119,18 @@ local rootCommand = Commandline.Command.new({
                 Commandline.Flag.new({
                     Name = "reset",
                     Description = "Reset Studio layout and dock settings.",
+                }),
+            },
+        }),
+        Commandline.Command.new({
+            Name = "update",
+            Description = "Update rbxstudio CLI to the latest version.",
+            Flags = {
+                Commandline.Flag.new({
+                    Name = "version",
+                    Shorthand = "v",
+                    Description = "Install a specific version instead of the latest.",
+                    Type = "string",
                 }),
             },
         }),
