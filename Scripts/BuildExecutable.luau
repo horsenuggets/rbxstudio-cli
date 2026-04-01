@@ -4,8 +4,7 @@
 
 BuildExecutable
 
-Compiles the rbxstudio CLI to a standalone executable. Generates the
-version module and patches requires for cross-platform compatibility.
+Compiles the rbxstudio CLI to a standalone executable.
 
 [Usage] ./Scripts/BuildExecutable.luau [target]
 
@@ -24,11 +23,6 @@ local function buildExecutable()
         Name = "rbxstudio",
         EntryPoint = "Source/RbxstudioCli",
         Target = process.args[1],
-        AliasDirs = {
-            { alias = "@packages", dir = "Packages" },
-            { alias = "@rbxstudiocli", dir = "Source/RbxstudioCli" },
-            { alias = "@tests", dir = "Tests" },
-        },
     })
 end
 
