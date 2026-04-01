@@ -20,8 +20,8 @@ exclude = ["**"]
 
 [dependencies]
 Chalk = "horsenuggets/chalk-luau@1.0.0"
-Commandline = "horsenuggets/commandline-luau@0.2.0"
+Commandline = "horsenuggets/commandline-luau@0.2.1"
 t = "horsenuggets/t@3.1.1-horse.0.3"
 
 [dev-dependencies]
-Testable = "horsenuggets/testable@0.1.0"
+Testable = "horsenuggets/testable@1.1.0"
