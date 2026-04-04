@@ -8,7 +8,6 @@ realm = "shared"
 registry = "https://github.com/UpliftGames/wally-index"
 repository = "https://github.com/horsenuggets/rbxstudio-cli"
 include = [
-    ".luaurc",
     "default.project.json",
     "init.luau",
     "LICENSE",
