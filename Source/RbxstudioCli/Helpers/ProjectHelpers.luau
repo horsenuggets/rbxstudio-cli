@@ -10,6 +10,7 @@ that Studio can open.
 
 local Chalk = require("@packages/Chalk")
 local Colors = require("@rbxstudiocli/Helpers/Colors")
+local RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
 local fs = require("@lune/fs")
 local process = require("@lune/process")
 local serde = require("@lune/serde")
@@ -114,7 +115,8 @@ function ProjectHelpers.createTempPlace(name: string?): string
     print(`Created project at {Colors.path(projectDir)}{Colors.projectName(projectFile)}.`)
 
     -- Build the place file with Rojo
-    local result = process.exec("rojo", {
+    local rojoBin = RojoHelpers.resolveRojo()
+    local result = process.exec(rojoBin, {
         "build",
         projectPath,
         "--output",
