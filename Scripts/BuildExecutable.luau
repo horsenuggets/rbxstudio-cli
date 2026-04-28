@@ -14,10 +14,14 @@ local Toolkit = require("@packages/Commandline").Toolkit
 local process = require("@lune/process")
 
 local function buildExecutable()
-    Toolkit.generateVersion({
-        VersionFile = "VERSION",
-        OutputPath = "Source/RbxstudioCli/RbxstudioCommand/__VERSION__.luau",
-    })
+    -- Generate version modules (including Rojo version from rokit.toml)
+    local result = process.exec("lune", { "run", "Scripts/GenerateVersion.luau" })
+    if not result.ok then
+        print("Failed to generate version modules.")
+        print(result.stderr)
+        process.exit(1)
+    end
+    print(result.stdout)
 
     Toolkit.build({
         Name = "rbxstudio",

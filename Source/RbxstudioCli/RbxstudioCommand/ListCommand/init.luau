@@ -10,6 +10,7 @@ names from the Roblox API for published places.
 
 local Colors = require("@rbxstudiocli/Helpers/Colors")
 local Commandline = require("@packages/Commandline")
+local CookieHelpers = require("@rbxstudiocli/Helpers/CookieHelpers")
 local fs = require("@lune/fs")
 local net = require("@lune/net")
 local process = require("@lune/process")
@@ -21,57 +22,17 @@ local LOG_DIR = (process.env.HOME or "") .. "/Library/Logs/Roblox"
 -- Roblox API helpers
 ------------------------------------------------------------------------------------------
 
-local robloSecurityCookie: string? = nil
 local placeNameCache: { [string]: string } = {}
-
-local function getRobloSecurity(): string?
-    if robloSecurityCookie then
-        return robloSecurityCookie
-    end
-
-    if process.os ~= "macos" then
-        return nil
-    end
-
-    local result = process.exec("security", {
-        "find-generic-password",
-        "-a",
-        "https://www.roblox.com/:SharedROBLOSECURITYForStudio",
-        "-w",
-    })
-
-    if not result.ok then
-        return nil
-    end
-
-    local hexResult = process.exec("sh", {
-        "-c",
-        "echo '" .. result.stdout:gsub("%s+", "") .. "' | xxd -r -p | plutil -convert xml1 -o - -",
-    })
-
-    if not hexResult.ok then
-        return nil
-    end
-
-    robloSecurityCookie = hexResult.stdout:match("_|WARNING[^<]+")
-    return robloSecurityCookie
-end
 
 local function getPlaceName(placeId: string): string?
     if placeNameCache[placeId] then
         return placeNameCache[placeId]
     end
 
-    local headers: { [string]: string } = {}
-    local cookie = getRobloSecurity()
-    if cookie then
-        headers["Cookie"] = ".ROBLOSECURITY=" .. cookie
-    end
-
     local ok, response = pcall(net.request, {
         url = `https://games.roblox.com/v1/games/multiget-place-details?placeIds={placeId}`,
         method = "GET",
-        headers = headers,
+        headers = CookieHelpers.authHeaders(),
     })
 
     if ok and response.ok then
