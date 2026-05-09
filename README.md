@@ -15,7 +15,7 @@ curl -fsSL "https://raw.githubusercontent.com/horsenuggets/rbxstudio-cli/main/Sc
 **Windows (PowerShell):**
 
 ```powershell
-iwr "https://raw.githubusercontent.com/horsenuggets/rbxstudio-cli/main/Scripts/Install.Win.ps1" -useb | iex
+iwr "https://raw.githubusercontent.com/horsenuggets/rbxstudio-cli/main/Scripts/install-win.ps1" -useb | iex
 ```
 
 ### Manual Install

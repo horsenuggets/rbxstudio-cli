@@ -38,3 +38,4 @@ __VERSION__.luau
 .terraform/
 *.tfstate
 *.tfstate.backup
+.worktrees/
