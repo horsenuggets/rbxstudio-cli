@@ -9,25 +9,25 @@ subsequent runs.
 
 --]]
 
-local fs = require("@lune/fs")
-local process = require("@lune/process")
+const fs = require("@lune/fs")
+const process = require("@lune/process")
 
-local IS_MACOS = process.os == "macos"
-local HOME_DIR = process.env.HOME or ""
-local COOKIE_PATH = HOME_DIR .. "/.rbxstudio-cli/.cookie"
+const IS_MACOS = process.os == "macos"
+const HOME_DIR = process.env.HOME or ""
+const COOKIE_PATH = HOME_DIR .. "/.rbxstudio-cli/.cookie"
 
-local CookieHelpers = {}
+const CookieHelpers = {}
 
 local cachedCookie: string? = nil
 
 -- Extracts the .ROBLOSECURITY cookie value from a macOS Keychain entry.
 -- The cookie is stored as a hex-encoded plist by Roblox Studio.
-local function readFromKeychain(): string?
+const function readFromKeychain(): string?
     if not IS_MACOS then
         return nil
     end
 
-    local result = process.exec("security", {
+    const result = process.exec("security", {
         "find-generic-password",
         "-a",
         "https://www.roblox.com/:SharedROBLOSECURITYForStudio",
@@ -38,7 +38,7 @@ local function readFromKeychain(): string?
         return nil
     end
 
-    local hexResult = process.exec("sh", {
+    const hexResult = process.exec("sh", {
         "-c",
         "echo '" .. result.stdout:gsub("%s+", "") .. "' | xxd -r -p | plutil -convert xml1 -o - -",
     })
@@ -51,13 +51,13 @@ local function readFromKeychain(): string?
 end
 
 -- Reads the cached cookie from ~/.rbxstudio-cli/.cookie
-local function readFromFile(): string?
+const function readFromFile(): string?
     if not fs.isFile(COOKIE_PATH) then
         return nil
     end
 
-    local content = fs.readFile(COOKIE_PATH)
-    local cookie = content:match("^%s*(.-)%s*$")
+    const content = fs.readFile(COOKIE_PATH)
+    const cookie = content:match("^%s*(.-)%s*$")
     if cookie and #cookie > 0 then
         return cookie
     end
@@ -66,8 +66,8 @@ local function readFromFile(): string?
 end
 
 -- Saves the cookie to ~/.rbxstudio-cli/.cookie with restrictive permissions
-local function saveToFile(cookie: string)
-    local dir = COOKIE_PATH:match("(.+)/[^/]+$")
+const function saveToFile(cookie: string)
+    const dir = COOKIE_PATH:match("(.+)/[^/]+$")
     if dir and not fs.isDir(dir) then
         fs.writeDir(dir)
     end
@@ -94,14 +94,14 @@ function CookieHelpers.getRobloxSecurity(): string?
     end
 
     -- Try file cache first (no Keychain prompt)
-    local fileCookie = readFromFile()
+    const fileCookie = readFromFile()
     if fileCookie then
         cachedCookie = fileCookie
         return cachedCookie
     end
 
     -- Fall back to Keychain (may prompt for password)
-    local keychainCookie = readFromKeychain()
+    const keychainCookie = readFromKeychain()
     if keychainCookie then
         cachedCookie = keychainCookie
         saveToFile(keychainCookie)
@@ -116,8 +116,8 @@ end
     headers if the cookie is not available.
 ]]
 function CookieHelpers.authHeaders(): { [string]: string }
-    local headers: { [string]: string } = {}
-    local cookie = CookieHelpers.getRobloxSecurity()
+    const headers: { [string]: string } = {}
+    const cookie = CookieHelpers.getRobloxSecurity()
     if cookie then
         headers["Cookie"] = ".ROBLOSECURITY=" .. cookie
     end

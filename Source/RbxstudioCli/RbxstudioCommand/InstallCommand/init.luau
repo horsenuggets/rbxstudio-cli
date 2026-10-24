@@ -8,39 +8,39 @@ from GitHub releases.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
-local Commandline = require("@packages/Commandline")
-local RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
-local __ROJO_VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__ROJO_VERSION__")
-local __VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__VERSION__")
-local fs = require("@lune/fs")
-local net = require("@lune/net")
-local process = require("@lune/process")
-local serde = require("@lune/serde")
+const Chalk = require("@packages/Chalk")
+const Commandline = require("@packages/Commandline")
+const RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
+const __ROJO_VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__ROJO_VERSION__")
+const __VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__VERSION__")
+const fs = require("@lune/fs")
+const net = require("@lune/net")
+const process = require("@lune/process")
+const serde = require("@lune/serde")
 
-local SelfUpdate = Commandline.Toolkit._SelfUpdate
+const SelfUpdate = Commandline.Toolkit._SelfUpdate
 
-local NAME = "rbxstudio"
-local INSTALL_DIR = ".rbxstudio-cli"
-local REPOSITORY = "horsenuggets/rbxstudio-cli"
+const NAME = "rbxstudio"
+const INSTALL_DIR = ".rbxstudio-cli"
+const REPOSITORY = "horsenuggets/rbxstudio-cli"
 
-local IS_WINDOWS = process.os == "windows"
-local HOME_DIR = if IS_WINDOWS then process.env.USERPROFILE or "" else process.env.HOME or ""
-local INSTALL_PATH = HOME_DIR .. "/" .. INSTALL_DIR
-local BIN_DIR = INSTALL_PATH .. "/bin"
-local EXECUTABLE_SUFFIX = if IS_WINDOWS then ".exe" else ""
-local PATH_EXPORT_COMMENT = "# Added by " .. NAME
-local PATH_EXPORT_LINE = `export PATH="{BIN_DIR}:$PATH"`
-local SHELL_CONFIGS = {
+const IS_WINDOWS = process.os == "windows"
+const HOME_DIR = if IS_WINDOWS then process.env.USERPROFILE or "" else process.env.HOME or ""
+const INSTALL_PATH = HOME_DIR .. "/" .. INSTALL_DIR
+const BIN_DIR = INSTALL_PATH .. "/bin"
+const EXECUTABLE_SUFFIX = if IS_WINDOWS then ".exe" else ""
+const PATH_EXPORT_COMMENT = "# Added by " .. NAME
+const PATH_EXPORT_LINE = `export PATH="{BIN_DIR}:$PATH"`
+const SHELL_CONFIGS = {
     { file = ".bash_profile", shell = "bash" },
     { file = ".bashrc", shell = "bash" },
     { file = ".zshrc", shell = "zsh" },
 }
-local XSH_PATH_FILE = HOME_DIR .. "/.path"
+const XSH_PATH_FILE = HOME_DIR .. "/.path"
 
-local function downloadLatestBinary(destPath: string): boolean
-    local url = `https://api.github.com/repos/{REPOSITORY}/releases/latest`
-    local ok, response = pcall(net.request, {
+const function downloadLatestBinary(destPath: string): boolean
+    const url = `https://api.github.com/repos/{REPOSITORY}/releases/latest`
+    const ok, response = pcall(net.request, {
         url = url,
         method = "GET",
         headers = { ["User-Agent"] = NAME },
@@ -51,14 +51,14 @@ local function downloadLatestBinary(destPath: string): boolean
         return false
     end
 
-    local success, release = pcall(serde.decode, "json" :: "json", response.body)
+    const success, release = pcall(serde.decode, "json" :: "json", response.body)
     if not success then
         print(Chalk.red("Failed to parse release data."))
         return false
     end
 
-    local platformSuffix = SelfUpdate.getPlatformSuffix()
-    local assetName = `{NAME}-{platformSuffix}{EXECUTABLE_SUFFIX}`
+    const platformSuffix = SelfUpdate.getPlatformSuffix()
+    const assetName = `{NAME}-{platformSuffix}{EXECUTABLE_SUFFIX}`
     local downloadUrl: string? = nil
 
     for _, asset in release.assets or {} do
@@ -73,7 +73,7 @@ local function downloadLatestBinary(destPath: string): boolean
         return false
     end
 
-    local dlOk, dlResponse = pcall(net.request, {
+    const dlOk, dlResponse = pcall(net.request, {
         url = downloadUrl,
         method = "GET",
         headers = { ["User-Agent"] = NAME },
@@ -92,15 +92,15 @@ local function downloadLatestBinary(destPath: string): boolean
     return true
 end
 
-local function addToPath()
+const function addToPath()
     if IS_WINDOWS then
-        local psCmd = "$p = [Environment]::GetEnvironmentVariable('PATH','User');"
+        const psCmd = "$p = [Environment]::GetEnvironmentVariable('PATH','User');"
             .. " if ($p -notlike '*"
             .. BIN_DIR
             .. "*') { [Environment]::SetEnvironmentVariable('PATH', '"
             .. BIN_DIR
             .. ";' + $p, 'User') }"
-        local result = process.exec("powershell", { "-Command", psCmd })
+        const result = process.exec("powershell", { "-Command", psCmd })
         if result.ok then
             print(`Added {Chalk.dim(BIN_DIR)} to user PATH.`)
         end
@@ -123,7 +123,7 @@ local function addToPath()
 
     -- Fall back to shell config files
     for _, config in SHELL_CONFIGS do
-        local configPath = `{HOME_DIR}/{config.file}`
+        const configPath = `{HOME_DIR}/{config.file}`
         if fs.isFile(configPath) then
             local content = fs.readFile(configPath)
             if not string.find(content, PATH_EXPORT_COMMENT, 1, true) then
@@ -153,12 +153,12 @@ return Commandline.Command.new({
             fs.writeDir(BIN_DIR)
         end
 
-        local binaryPath = `{BIN_DIR}/{NAME}{EXECUTABLE_SUFFIX}`
+        const binaryPath = `{BIN_DIR}/{NAME}{EXECUTABLE_SUFFIX}`
 
         -- Try to copy current running binary first
-        local currentExe = SelfUpdate.findExecutable(NAME)
+        const currentExe = SelfUpdate.findExecutable(NAME)
         if currentExe then
-            local contents = fs.readFile(currentExe)
+            const contents = fs.readFile(currentExe)
             fs.writeFile(binaryPath, contents)
             if not IS_WINDOWS then
                 process.exec("chmod", { "+x", binaryPath })

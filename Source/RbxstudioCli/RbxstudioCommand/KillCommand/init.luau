@@ -7,13 +7,13 @@ all running Studio instances.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local Commandline = require("@packages/Commandline")
-local process = require("@lune/process")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const Commandline = require("@packages/Commandline")
+const process = require("@lune/process")
 
 -- Counts running Studio processes
-local function countStudioProcesses(): number
-    local result = process.exec("pgrep", { "-x", "RobloxStudio" })
+const function countStudioProcesses(): number
+    const result = process.exec("pgrep", { "-x", "RobloxStudio" })
     if not result.ok then
         return 0
     end
@@ -36,10 +36,10 @@ return Commandline.Command.new({
         }),
     },
     Impl = function(args, _flags)
-        local target = args.pid
+        const target = args.pid
 
         if target == nil or target == "all" then
-            local count = countStudioProcesses()
+            const count = countStudioProcesses()
             if count == 0 then
                 print("No Roblox Studio processes running.")
                 return
@@ -51,7 +51,7 @@ return Commandline.Command.new({
             )
         else
             -- Verify the PID is a Studio process
-            local result = process.exec("ps", { "-p", target, "-o", "args=" })
+            const result = process.exec("ps", { "-p", target, "-o", "args=" })
             if not result.ok or not result.stdout:find("RobloxStudio") then
                 print(Colors.error(`Process {Colors.bold(target)} is not a Roblox Studio process.`))
                 process.exit(1)

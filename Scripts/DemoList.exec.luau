@@ -2,7 +2,7 @@
 
 --[[
 
-DemoList
+DemoList.exec
 
 Renders a mock list table to preview the color scheme and memory
 gradient across a range of values without needing running Studio
@@ -10,10 +10,10 @@ instances.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local MemoryHelpers = require("@rbxstudiocli/Helpers/MemoryHelpers")
-local TableHelpers = require("@rbxstudiocli/Helpers/TableHelpers")
-local TimeHelpers = require("@rbxstudiocli/Helpers/TimeHelpers")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const MemoryHelpers = require("@rbxstudiocli/Helpers/MemoryHelpers")
+const TableHelpers = require("@rbxstudiocli/Helpers/TableHelpers")
+const TimeHelpers = require("@rbxstudiocli/Helpers/TimeHelpers")
 
 type MockEntry = {
     Highlight: string?,
@@ -24,7 +24,7 @@ type MockEntry = {
     Uptime: string,
 }
 
-local MOCK_DATA: { MockEntry } = {
+const MOCK_DATA: { MockEntry } = {
     { Pid = "10001", Memory = 384 * 1024, Uptime = "02:15", PlaceId = nil, Status = "Start Page", Highlight = nil },
     {
         Pid = "10002",
@@ -100,18 +100,20 @@ local MOCK_DATA: { MockEntry } = {
     },
 }
 
-local function demoList()
-    local rows: { TableHelpers.TableRow } = {}
+const DemoList = {}
+
+function DemoList.exec()
+    const rows: { TableHelpers.TableRow } = {}
 
     for _, entry in MOCK_DATA do
-        local coloredMem, rawMem = MemoryHelpers.format(entry.Memory)
-        local coloredUptime, rawUptime = TimeHelpers.formatUptimeColored(entry.Uptime)
-        local rawPlaceId = entry.PlaceId or "nil"
-        local coloredPlaceId = if entry.PlaceId then Colors.numericId(entry.PlaceId) else Colors.nil_("nil")
+        const coloredMem, rawMem = MemoryHelpers.format(entry.Memory)
+        const coloredUptime, rawUptime = TimeHelpers.formatUptimeColored(entry.Uptime)
+        const rawPlaceId = entry.PlaceId or "nil"
+        const coloredPlaceId = if entry.PlaceId then Colors.numericId(entry.PlaceId) else Colors.nil_("nil")
 
         local coloredStatus = entry.Status
         if entry.Highlight then
-            local escaped = entry.Highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
+            const escaped = entry.Highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
             coloredStatus = coloredStatus:gsub(escaped, Colors.projectName(entry.Highlight), 1)
         end
 
@@ -133,7 +135,7 @@ local function demoList()
         })
     end
 
-    local count = tostring(#MOCK_DATA)
+    const count = tostring(#MOCK_DATA)
     print(
         `There {if #MOCK_DATA == 1 then "is" else "are"} {Colors.count(count)} Roblox Studio {if #MOCK_DATA == 1
             then "instance"
@@ -143,4 +145,4 @@ local function demoList()
     TableHelpers.render({ "Process ID", "Memory", "Uptime", "Place ID", "Status" }, rows)
 end
 
-demoList()
+DemoList.exec()

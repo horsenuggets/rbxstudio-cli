@@ -7,9 +7,9 @@ content and separate raw text for width calculation.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
 
-local TableHelpers = {}
+const TableHelpers = {}
 
 export type TableRow = {
     Raw: { string },
@@ -18,7 +18,7 @@ export type TableRow = {
 
 function TableHelpers.render(headers: { string }, rows: { TableRow })
     -- Calculate column widths from raw uncolored text
-    local widths = {}
+    const widths = {}
     for i, header in headers do
         widths[i] = #header
     end
@@ -28,25 +28,25 @@ function TableHelpers.render(headers: { string }, rows: { TableRow })
         end
     end
 
-    local function border(left: string, mid: string, right: string): string
-        local parts = {}
+    const function border(left: string, mid: string, right: string): string
+        const parts = {}
         for _, w in widths do
             table.insert(parts, string.rep("─", w + 2))
         end
         return left .. table.concat(parts, mid) .. right
     end
 
-    local function formatCells(cells: { string }, rawCells: { string }): string
-        local parts = {}
+    const function formatCells(cells: { string }, rawCells: { string }): string
+        const parts = {}
         for i, cell in cells do
-            local rawLen = #(rawCells[i] or "")
-            local padding = string.rep(" ", (widths[i] or 0) - rawLen)
+            const rawLen = #(rawCells[i] or "")
+            const padding = string.rep(" ", (widths[i] or 0) - rawLen)
             table.insert(parts, ` {cell}{padding} `)
         end
         return "│" .. table.concat(parts, "│") .. "│"
     end
 
-    local boldHeaders = {}
+    const boldHeaders = {}
     for _, h in headers do
         table.insert(boldHeaders, Colors.bold(h))
     end

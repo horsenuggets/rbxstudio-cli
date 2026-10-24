@@ -8,7 +8,7 @@ doing based on log entries.
 
 --]]
 
-local LogHelpers = {}
+const LogHelpers = {}
 
 export type SessionInfo = {
     Status: string,
@@ -23,7 +23,7 @@ export type SessionInfo = {
 -- The optional getPlaceNameFn callback resolves a place ID to a
 -- human-readable name. If not provided, place IDs are used as-is.
 function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) -> string?)?): SessionInfo
-    local getPlaceName = getPlaceNameFn or function(_placeId: string)
+    const getPlaceName = getPlaceNameFn or function(_placeId: string)
         return nil
     end
 
@@ -40,16 +40,16 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     -- from lines that contain it.
     local searchStart = 1
     while true do
-        local matchStart, matchEnd = content:find("TeamCreateJoinPayload", searchStart)
+        const matchStart, matchEnd = content:find("TeamCreateJoinPayload", searchStart)
         if not matchStart then
             break
         end
         lastTeamCreatePos = matchStart
 
         -- Extract place ID if this line has one
-        local lineEnd = content:find("\n", matchEnd) or #content
-        local line = content:sub(matchStart, lineEnd)
-        local place = line:match("place (%d+)")
+        const lineEnd = content:find("\n", matchEnd) or #content
+        const line = content:sub(matchStart, lineEnd)
+        const place = line:match("place (%d+)")
         if place then
             lastTeamCreatePlace = place
         end
@@ -60,7 +60,7 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     -- Find all PlaceManager opens (latest wins)
     searchStart = 1
     while true do
-        local matchStart, matchEnd, t = content:find("PlaceManager::createAndShowIDEDoc with task (%w+)", searchStart)
+        const matchStart, matchEnd, t = content:find("PlaceManager::createAndShowIDEDoc with task (%w+)", searchStart)
         if not matchStart then
             break
         end
@@ -72,7 +72,7 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     -- Find the last Start Page show event
     searchStart = 1
     while true do
-        local matchStart, matchEnd = content:find("showStartPageWidgets", searchStart)
+        const matchStart, matchEnd = content:find("showStartPageWidgets", searchStart)
         if not matchStart then
             break
         end
@@ -81,12 +81,12 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     end
 
     -- Determine state from whichever event is latest
-    local latestPos = math.max(lastTeamCreatePos, lastTaskPos, lastStartPagePos)
+    const latestPos = math.max(lastTeamCreatePos, lastTaskPos, lastStartPagePos)
 
     -- Helpers to reduce repetition in return values
-    local NEW_PLACE: SessionInfo = { Status = "Edit (New place)", PlaceId = nil, Highlight = nil }
+    const NEW_PLACE: SessionInfo = { Status = "Edit (New place)", PlaceId = nil, Highlight = nil }
 
-    local function makeResult(prefix: string, id: string?, name: string?): SessionInfo
+    const function makeResult(prefix: string, id: string?, name: string?): SessionInfo
         return {
             Status = if name then `{prefix} ({name})` else prefix,
             PlaceId = id,
@@ -103,14 +103,14 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
     end
 
     if latestPos == lastTeamCreatePos and lastTeamCreatePlace then
-        local name = getPlaceName(lastTeamCreatePlace)
+        const name = getPlaceName(lastTeamCreatePlace)
         return makeResult("Team Create", lastTeamCreatePlace, name)
     end
 
     if lastTask == "EditFile" then
-        local filePath = content:match("%-localPlaceFile%s+(%S+)")
+        const filePath = content:match("%-localPlaceFile%s+(%S+)")
         if filePath then
-            local fileName = filePath:match("([^/\\]+)$") or filePath
+            const fileName = filePath:match("([^/\\]+)$") or filePath
             return makeResult("Edit", nil, fileName)
         end
         return makeResult("Edit", nil, "local file")
@@ -122,9 +122,9 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
         -- the user may have since published it or navigated to a
         -- different place, so also check for later telemetry entries
         -- with non-zero IDs that appear after the initial startup.
-        local cmdLinePlaceId = content:match("%-placeId%s+(%d+)")
-        local cmdLineUniverseId = content:match("%-universeId%s+(%d+)")
-        local isNewPlace = cmdLineUniverseId == "0"
+        const cmdLinePlaceId = content:match("%-placeId%s+(%d+)")
+        const cmdLineUniverseId = content:match("%-universeId%s+(%d+)")
+        const isNewPlace = cmdLineUniverseId == "0"
 
         -- Find the last non-zero place/universe IDs from telemetry
         local lastPlaceId = nil

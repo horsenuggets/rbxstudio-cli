@@ -6,64 +6,64 @@ Tests for log parsing and session state detection.
 
 --]]
 
-local LogHelpers = require("@rbxstudiocli/Helpers/LogHelpers")
+const LogHelpers = require("@rbxstudiocli/Helpers/LogHelpers")
 
 return function()
     describe("parseSessionInfo", function()
         it("should return Unknown for empty content", function()
-            local result = LogHelpers.parseSessionInfo("")
+            const result = LogHelpers.parseSessionInfo("")
             expect(result.Status).to.equal("Unknown")
             expect(result.PlaceId).to.equal(nil)
             expect(result.Highlight).to.equal(nil)
         end)
 
         it("should detect Start Page", function()
-            local content = [[
+            const content = [[
 2026-03-26T17:04:46.914Z Info showStartPageWidgets
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Start Page")
             expect(result.PlaceId).to.equal(nil)
         end)
 
         it("should detect EditFile with local place file", function()
-            local content = [[
+            const content = [[
 Command line:
 /Applications/RobloxStudio.app/Contents/MacOS/RobloxStudio -task EditFile -localPlaceFile /Users/chris/test/my-game.rbxl
 Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit (my-game.rbxl)")
             expect(result.PlaceId).to.equal(nil)
             expect(result.Highlight).to.equal("my-game.rbxl")
         end)
 
         it("should detect EditFile without local place file path", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit (local file)")
             expect(result.PlaceId).to.equal(nil)
         end)
 
         it("should detect EditPlace with place ID", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 0
 [telemetryLog] placeid: 9430488623
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit")
             expect(result.PlaceId).to.equal("9430488623")
         end)
 
         it("should resolve EditPlace with place name via callback", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 12345
             ]]
-            local result = LogHelpers.parseSessionInfo(content, function(id)
+            const result = LogHelpers.parseSessionInfo(content, function(id)
                 if id == "12345" then
                     return "My Cool Game"
                 end
@@ -75,30 +75,30 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
         end)
 
         it("should detect EditPlaceRevision", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditPlaceRevision
 [telemetryLog] placeid: 5555
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit")
             expect(result.PlaceId).to.equal("5555")
         end)
 
         it("should detect Team Create with place ID", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditFile
 Info TeamCreateJoinPayload Joining game abc place 13435539729 at server
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Team Create")
             expect(result.PlaceId).to.equal("13435539729")
         end)
 
         it("should resolve Team Create place name via callback", function()
-            local content = [[
+            const content = [[
 Info TeamCreateJoinPayload Joining game abc place 99999 at server
             ]]
-            local result = LogHelpers.parseSessionInfo(content, function(id)
+            const result = LogHelpers.parseSessionInfo(content, function(id)
                 if id == "99999" then
                     return "Plugin Sandbox"
                 end
@@ -110,108 +110,108 @@ Info TeamCreateJoinPayload Joining game abc place 99999 at server
         end)
 
         it("should skip zero place IDs", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 0
 [telemetryLog] placeid: 0
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit")
             expect(result.PlaceId).to.equal(nil)
         end)
 
         it("should use the last non-zero place ID", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 111
 [telemetryLog] placeid: 0
 [telemetryLog] placeid: 222
 [telemetryLog] placeid: 0
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.PlaceId).to.equal("222")
         end)
 
         it("should detect returning to Start Page after editing", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditFile
 Info lots of other stuff happening here
 Info showStartPageWidgets
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Start Page")
         end)
 
         it("should detect new task after Start Page", function()
-            local content = [[
+            const content = [[
 Info showStartPageWidgets
 Info more stuff
 Info PlaceManager::createAndShowIDEDoc with task EditFile
 -localPlaceFile /path/to/game.rbxl
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit (game.rbxl)")
         end)
 
         it("should detect Team Create overriding EditFile", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditFile
 Info TeamCreateJoinPayload Joining game x place 7777 at server
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Team Create")
             expect(result.PlaceId).to.equal("7777")
         end)
 
         it("should use last Team Create if multiple joins", function()
-            local content = [[
+            const content = [[
 Info TeamCreateJoinPayload Joining game a place 1111 at server
 Info TeamCreateJoinPayload Joining game b place 2222 at server
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.PlaceId).to.equal("2222")
         end)
 
         it("should use last task if multiple opens", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task EditFile
 Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 8888
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit")
             expect(result.PlaceId).to.equal("8888")
         end)
 
         it("should detect generic new place for unknown tasks", function()
-            local content = [[
+            const content = [[
 Info PlaceManager::createAndShowIDEDoc with task NewDocument
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit (New place)")
             expect(result.PlaceId).to.equal(nil)
         end)
 
         it("should extract filename from Windows-style paths", function()
-            local content = [[
+            const content = [[
 -localPlaceFile C:\Users\chris\game.rbxl
 Info PlaceManager::createAndShowIDEDoc with task EditFile
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Highlight).to.equal("game.rbxl")
         end)
 
         it("should handle log content with no relevant patterns", function()
-            local content = [[
+            const content = [[
 2026-03-26T17:04:46.914Z Info some random log line
 2026-03-26T17:04:46.915Z Info another random log line
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Unknown")
         end)
 
         it("should detect published place from new place", function()
-            local content = [[
+            const content = [[
 Command line:
 /Applications/RobloxStudio.app/Contents/MacOS/RobloxStudio -universeId 0 -placeId 95206881 -task EditPlace
 Info PlaceManager::createAndShowIDEDoc with task EditPlace
@@ -220,7 +220,7 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 85939162614693
 [telemetryLog] universeid: 9944635641
             ]]
-            local result = LogHelpers.parseSessionInfo(content, function(id)
+            const result = LogHelpers.parseSessionInfo(content, function(id)
                 if id == "85939162614693" then
                     return "test game :)"
                 end
@@ -232,14 +232,14 @@ Info PlaceManager::createAndShowIDEDoc with task EditPlace
         end)
 
         it("should detect new unsaved place with inherited place ID", function()
-            local content = [[
+            const content = [[
 Command line:
 /Applications/RobloxStudio.app/Contents/MacOS/RobloxStudio -universeId 0 -placeId 95206881 -task EditPlace
 Info PlaceManager::createAndShowIDEDoc with task EditPlace
 [telemetryLog] placeid: 95206881
 [telemetryLog] universeid: 0
             ]]
-            local result = LogHelpers.parseSessionInfo(content)
+            const result = LogHelpers.parseSessionInfo(content)
             expect(result.Status).to.equal("Edit (New place)")
             expect(result.PlaceId).to.equal(nil)
         end)

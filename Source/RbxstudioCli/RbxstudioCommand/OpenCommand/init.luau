@@ -8,12 +8,12 @@ dispatches to the appropriate launcher.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local Commandline = require("@packages/Commandline")
-local EditLauncher = require("@rbxstudiocli/Helpers/EditLauncher")
-local FileLauncher = require("@rbxstudiocli/Helpers/FileLauncher")
-local classifyTarget = require("@self/classifyTarget")
-local process = require("@lune/process")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const Commandline = require("@packages/Commandline")
+const EditLauncher = require("@rbxstudiocli/Helpers/EditLauncher")
+const FileLauncher = require("@rbxstudiocli/Helpers/FileLauncher")
+const classifyTarget = require("@self/classifyTarget")
+const process = require("@lune/process")
 
 return Commandline.Command.new({
     Name = "open",
@@ -50,10 +50,10 @@ return Commandline.Command.new({
         }),
     },
     Impl = function(args, flags)
-        local target = args.target
-        local noPlugins = flags.noplugins and flags.noplugins.Value
+        const target = args.target
+        const noPlugins = flags.noplugins and flags.noplugins.Value
 
-        local classification, err = classifyTarget(target)
+        const classification, err = classifyTarget(target)
         if not classification then
             print(Colors.error(err :: string))
             process.exit(1)

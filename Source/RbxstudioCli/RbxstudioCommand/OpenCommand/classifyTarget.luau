@@ -7,14 +7,14 @@ Returns a table with the classification type and the normalized value.
 
 --]]
 
-local fs = require("@lune/fs")
+const fs = require("@lune/fs")
 
 export type Classification = {
     Type: "placeid" | "file",
     Value: string,
 }
 
-local function classifyTarget(target: string): (Classification?, string?)
+const function classifyTarget(target: string): (Classification?, string?)
     assert(type(target) == "string")
 
     if target == "" then
