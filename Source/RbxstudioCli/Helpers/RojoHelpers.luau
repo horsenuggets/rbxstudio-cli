@@ -8,23 +8,23 @@ from GitHub releases, and extracting zip archives.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
-local Commandline = require("@packages/Commandline")
-local fs = require("@lune/fs")
-local net = require("@lune/net")
-local process = require("@lune/process")
-local serde = require("@lune/serde")
+const Chalk = require("@packages/Chalk")
+const Commandline = require("@packages/Commandline")
+const fs = require("@lune/fs")
+const net = require("@lune/net")
+const process = require("@lune/process")
+const serde = require("@lune/serde")
 
-local SelfUpdate = Commandline.Toolkit._SelfUpdate
+const SelfUpdate = Commandline.Toolkit._SelfUpdate
 
-local IS_WINDOWS = process.os == "windows"
-local HOME_DIR = if IS_WINDOWS then process.env.USERPROFILE or "" else process.env.HOME or ""
-local BIN_DIR = HOME_DIR .. "/.rbxstudio-cli/bin"
-local EXECUTABLE_SUFFIX = if IS_WINDOWS then ".exe" else ""
+const IS_WINDOWS = process.os == "windows"
+const HOME_DIR = if IS_WINDOWS then process.env.USERPROFILE or "" else process.env.HOME or ""
+const BIN_DIR = HOME_DIR .. "/.rbxstudio-cli/bin"
+const EXECUTABLE_SUFFIX = if IS_WINDOWS then ".exe" else ""
 
-local ROJO_REPOSITORY = "horsenuggets/rojo"
+const ROJO_REPOSITORY = "horsenuggets/rojo"
 
-local RojoHelpers = {}
+const RojoHelpers = {}
 
 --[[
     Returns the path where the bundled Rojo binary should be installed.
@@ -38,7 +38,7 @@ end
     first, then falls back to PATH lookup. Returns nil if not found.
 ]]
 function RojoHelpers.findRojo(): string?
-    local bundledPath = RojoHelpers.getRojoBinPath()
+    const bundledPath = RojoHelpers.getRojoBinPath()
     if fs.isFile(bundledPath) then
         return bundledPath
     end
@@ -50,7 +50,7 @@ end
     Resolves the Rojo binary path, exiting with an error if not found.
 ]]
 function RojoHelpers.resolveRojo(): string
-    local path = RojoHelpers.findRojo()
+    const path = RojoHelpers.findRojo()
     if path then
         return path
     end
@@ -89,10 +89,10 @@ end
     > version - Version tag to download (e.g., "7.7.0-rc.1-horse.0.7")
 ]]
 function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
-    local tag = if string.sub(version, 1, 1) == "v" then version else `v{version}`
-    local url = `https://api.github.com/repos/{ROJO_REPOSITORY}/releases/tags/{tag}`
+    const tag = if string.sub(version, 1, 1) == "v" then version else `v{version}`
+    const url = `https://api.github.com/repos/{ROJO_REPOSITORY}/releases/tags/{tag}`
 
-    local ok, response = pcall(net.request, {
+    const ok, response = pcall(net.request, {
         url = url,
         method = "GET",
         headers = { ["User-Agent"] = "rbxstudio" },
@@ -103,15 +103,15 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
         return false
     end
 
-    local success, release = pcall(serde.decode, "json" :: "json", response.body)
+    const success, release = pcall(serde.decode, "json" :: "json", response.body)
     if not success then
         print(Chalk.yellow("Failed to parse Rojo release data."))
         return false
     end
 
     -- Find the matching platform asset (zipped)
-    local platformSuffix = SelfUpdate.getPlatformSuffix()
-    local assetName = `rojo-{version}-{platformSuffix}.zip`
+    const platformSuffix = SelfUpdate.getPlatformSuffix()
+    const assetName = `rojo-{version}-{platformSuffix}.zip`
     local downloadUrl: string? = nil
 
     for _, asset in release.assets or {} do
@@ -127,7 +127,7 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
     end
 
     -- Download the zip
-    local dlOk, dlResponse = pcall(net.request, {
+    const dlOk, dlResponse = pcall(net.request, {
         url = downloadUrl,
         method = "GET",
         headers = { ["User-Agent"] = "rbxstudio" },
@@ -139,10 +139,10 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
     end
 
     -- Write zip to temp location and extract
-    local zipPath = `{binDir}/.rojo-download.zip`
+    const zipPath = `{binDir}/.rojo-download.zip`
     fs.writeFile(zipPath, dlResponse.body)
 
-    local extracted = RojoHelpers.extractZip(zipPath, binDir)
+    const extracted = RojoHelpers.extractZip(zipPath, binDir)
 
     -- Clean up zip
     if fs.isFile(zipPath) then
@@ -155,7 +155,7 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
     end
 
     -- Make executable on Unix
-    local rojoBinPath = `{binDir}/rojo{EXECUTABLE_SUFFIX}`
+    const rojoBinPath = `{binDir}/rojo{EXECUTABLE_SUFFIX}`
     if not IS_WINDOWS and fs.isFile(rojoBinPath) then
         process.exec("chmod", { "+x", rojoBinPath })
     end

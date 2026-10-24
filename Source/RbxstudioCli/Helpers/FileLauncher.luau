@@ -7,41 +7,41 @@ project. Used by both FileCommand and OpenCommand.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
-local fs = require("@lune/fs")
-local process = require("@lune/process")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
+const fs = require("@lune/fs")
+const process = require("@lune/process")
 
 export type Options = {
     Path: string,
     NoPlugins: boolean?,
 }
 
-local FileLauncher = {}
+const FileLauncher = {}
 
 function FileLauncher.launch(options: Options)
     assert(type(options) == "table")
     assert(type(options.Path) == "string")
 
-    local filePath = options.Path
+    const filePath = options.Path
 
     if not fs.isFile(filePath) then
         print(Colors.error(`File not found {Colors.bold(filePath)}.`))
         process.exit(1)
     end
 
-    local isProject = filePath:match("%.project%.json$")
-    local isPlace = filePath:match("%.rbxlx?$")
+    const isProject = filePath:match("%.project%.json$")
+    const isPlace = filePath:match("%.rbxlx?$")
 
     if not isProject and not isPlace then
         print(Colors.error("File must be a .rbxl, .rbxlx, or .project.json file."))
         process.exit(1)
     end
 
-    local fileName = filePath:match("([^/]+)$") or filePath
+    const fileName = filePath:match("([^/]+)$") or filePath
     print(`Opening {Colors.projectName(fileName)}...`)
 
-    local studioArgs = { "-task", "EditFile" }
+    const studioArgs = { "-task", "EditFile" }
 
     if isProject then
         table.insert(studioArgs, "-localProjectFile")

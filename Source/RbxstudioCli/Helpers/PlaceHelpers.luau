@@ -7,23 +7,23 @@ shared logic for resolving universe IDs and place names from place IDs.
 
 --]]
 
-local CookieHelpers = require("@rbxstudiocli/Helpers/CookieHelpers")
-local net = require("@lune/net")
-local serde = require("@lune/serde")
+const CookieHelpers = require("@rbxstudiocli/Helpers/CookieHelpers")
+const net = require("@lune/net")
+const serde = require("@lune/serde")
 
-local PlaceHelpers = {}
+const PlaceHelpers = {}
 
 -- Resolves the universe ID for a place ID using the public Roblox API
 function PlaceHelpers.getUniverseId(placeId: string): string?
     assert(type(placeId) == "string")
 
-    local ok, response = pcall(net.request, {
+    const ok, response = pcall(net.request, {
         url = `https://apis.roblox.com/universes/v1/places/{placeId}/universe`,
         method = "GET",
     })
 
     if ok and response.ok then
-        local success, data = pcall(serde.decode, "json" :: "json", response.body)
+        const success, data = pcall(serde.decode, "json" :: "json", response.body)
         if success and data and data.universeId then
             return tostring(data.universeId)
         end
@@ -38,14 +38,14 @@ end
 function PlaceHelpers.getPlaceName(placeId: string): string?
     assert(type(placeId) == "string")
 
-    local ok, response = pcall(net.request, {
+    const ok, response = pcall(net.request, {
         url = `https://games.roblox.com/v1/games/multiget-place-details?placeIds={placeId}`,
         method = "GET",
         headers = CookieHelpers.authHeaders(),
     })
 
     if ok and response.ok then
-        local success, data = pcall(serde.decode, "json" :: "json", response.body)
+        const success, data = pcall(serde.decode, "json" :: "json", response.body)
         if success and type(data) == "table" and #data > 0 then
             return data[1].name
         end

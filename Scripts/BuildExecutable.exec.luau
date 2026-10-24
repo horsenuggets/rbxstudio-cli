@@ -10,14 +10,14 @@ Compiles the rbxstudio CLI to a standalone executable.
 
 --]]
 
-local Toolkit = require("@packages/Commandline").Toolkit
-local process = require("@lune/process")
+const Toolkit = require("@packages/Commandline").Toolkit
+const process = require("@lune/process")
 
 const BuildExecutable = {}
 
 function BuildExecutable.exec()
     -- Generate version modules (including Rojo version from rokit.toml)
-    local result = process.exec("lune", { "run", "Scripts/GenerateVersion.exec.luau" })
+    const result = process.exec("lune", { "run", "Scripts/GenerateVersion.exec.luau" })
     if not result.ok then
         print("Failed to generate version modules.")
         print(result.stderr)

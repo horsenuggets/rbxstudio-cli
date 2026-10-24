@@ -8,17 +8,17 @@ that Studio can open.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
-local fs = require("@lune/fs")
-local process = require("@lune/process")
-local serde = require("@lune/serde")
-local t = require("@packages/t")
+const Chalk = require("@packages/Chalk")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
+const fs = require("@lune/fs")
+const process = require("@lune/process")
+const serde = require("@lune/serde")
+const t = require("@packages/t")
 
-local HOME = process.env.HOME or ""
+const HOME = process.env.HOME or ""
 
-local ProjectHelpers = {}
+const ProjectHelpers = {}
 
 -- Replaces the home directory prefix with ~ for display
 function ProjectHelpers.tildify(path: string): string
@@ -28,7 +28,7 @@ function ProjectHelpers.tildify(path: string): string
     return path
 end
 
-local TEMPLATE_PROJECT = {
+const TEMPLATE_PROJECT = {
     name = "rbxstudio-temp",
     tree = {
         ["$className"] = "DataModel",
@@ -76,7 +76,7 @@ local TEMPLATE_PROJECT = {
 
 -- Generates a short random hex ID (8 hex characters)
 function ProjectHelpers.generateHexId(): string
-    local parts = {}
+    const parts = {}
     for _ = 1, 4 do
         table.insert(parts, string.format("%02x", math.random(0, 255)))
     end
@@ -86,8 +86,8 @@ end
 function ProjectHelpers.createTempPlace(name: string?): string
     assert(t.optional(t.string)(name))
 
-    local placeName = name or `temp-{ProjectHelpers.generateHexId()}`
-    local tempDir = `{process.env.HOME}/.rbxstudio-cli/temp/{placeName}`
+    const placeName = name or `temp-{ProjectHelpers.generateHexId()}`
+    const tempDir = `{process.env.HOME}/.rbxstudio-cli/temp/{placeName}`
 
     if fs.isDir(tempDir) then
         if name then
@@ -101,22 +101,22 @@ function ProjectHelpers.createTempPlace(name: string?): string
     -- Write a timestamp file for auto-cleanup
     fs.writeFile(`{tempDir}/.created`, tostring(os.time()))
 
-    local projectPath = `{tempDir}/default.project.json`
-    local outputPath = `{tempDir}/{placeName}.rbxl`
+    const projectPath = `{tempDir}/default.project.json`
+    const outputPath = `{tempDir}/{placeName}.rbxl`
 
     -- Write the project JSON
-    local project = table.clone(TEMPLATE_PROJECT)
+    const project = table.clone(TEMPLATE_PROJECT)
     project.name = placeName
 
     fs.writeFile(projectPath, serde.encode("json", project, true))
-    local displayPath = ProjectHelpers.tildify(projectPath)
-    local projectDir = displayPath:match("^(.*/)") or ""
-    local projectFile = displayPath:match("([^/]+)$") or displayPath
+    const displayPath = ProjectHelpers.tildify(projectPath)
+    const projectDir = displayPath:match("^(.*/)") or ""
+    const projectFile = displayPath:match("([^/]+)$") or displayPath
     print(`Created project at {Colors.path(projectDir)}{Colors.projectName(projectFile)}.`)
 
     -- Build the place file with Rojo
-    local rojoBin = RojoHelpers.resolveRojo()
-    local result = process.exec(rojoBin, {
+    const rojoBin = RojoHelpers.resolveRojo()
+    const result = process.exec(rojoBin, {
         "build",
         projectPath,
         "--output",
@@ -129,9 +129,9 @@ function ProjectHelpers.createTempPlace(name: string?): string
         process.exit(1)
     end
 
-    local displayOutput = ProjectHelpers.tildify(outputPath)
-    local outputDir = displayOutput:match("^(.*/)") or ""
-    local outputFile = displayOutput:match("([^/]+)$") or displayOutput
+    const displayOutput = ProjectHelpers.tildify(outputPath)
+    const outputDir = displayOutput:match("^(.*/)") or ""
+    const outputFile = displayOutput:match("([^/]+)$") or displayOutput
     print(`Built place at {Colors.path(outputDir)}{Colors.projectName(outputFile)}.`)
     return outputPath
 end

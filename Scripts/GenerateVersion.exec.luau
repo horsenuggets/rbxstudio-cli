@@ -12,12 +12,12 @@ download during install/update.
 
 --]]
 
-local Toolkit = require("@packages/Commandline").Toolkit
-local fs = require("@lune/fs")
+const Toolkit = require("@packages/Commandline").Toolkit
+const fs = require("@lune/fs")
 
-local function extractRojoVersion(): string
-    local content = fs.readFile("rokit.toml")
-    local version = string.match(content, 'rojo%s*=%s*".-@([^"]+)"')
+const function extractRojoVersion(): string
+    const content = fs.readFile("rokit.toml")
+    const version = string.match(content, 'rojo%s*=%s*".-@([^"]+)"')
     assert(version, "Could not extract Rojo version from rokit.toml.")
     return version
 end
@@ -31,13 +31,13 @@ function GenerateVersion.exec()
     })
 
     -- Generate Rojo version module from rokit.toml
-    local rojoVersion = extractRojoVersion()
-    local rojoModule = '--[[\n\n__ROJO_VERSION__\n\nAuto-generated Rojo version module. Extracted from rokit.toml at build time.\n\n--]]\n\nreturn "'
+    const rojoVersion = extractRojoVersion()
+    const rojoModule = '--[[\n\n__ROJO_VERSION__\n\nAuto-generated Rojo version module. Extracted from rokit.toml at build time.\n\n--]]\n\nreturn "'
         .. rojoVersion
         .. '"\n'
     fs.writeFile("Source/RbxstudioCli/RbxstudioCommand/__ROJO_VERSION__.luau", rojoModule)
 
-    local Chalk = require("@packages/Chalk")
+    const Chalk = require("@packages/Chalk")
     print("Generated Rojo version module with version " .. Chalk.bold(Chalk.blueBright(rojoVersion)) .. ".")
 end
 

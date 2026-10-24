@@ -11,10 +11,10 @@ name as an argument to run only that test suite.
 
 --]]
 
-local Testable = require("@devpackages/Testable")
-local process = require("@lune/process")
+const Testable = require("@devpackages/Testable")
+const process = require("@lune/process")
 
-local TESTS = {
+const TESTS = {
     { Name = "ExampleTest", Func = require("../Tests/ExampleTest.spec") },
     { Name = "LogHelpersTest", Func = require("../Tests/LogHelpersTest.spec") },
     { Name = "OpenCommandTest", Func = require("../Tests/OpenCommandTest.spec") },
@@ -25,7 +25,7 @@ local TESTS = {
 const RunTests = {}
 
 function RunTests.exec()
-    local filterName = process.args[1]
+    const filterName = process.args[1]
     local testsToRun = TESTS
 
     if filterName then
@@ -46,7 +46,7 @@ function RunTests.exec()
         end
     end
 
-    local _, passed = Testable.run(testsToRun)
+    const _, passed = Testable.run(testsToRun)
     process.exit(if passed then 0 else 1)
 end
 

@@ -8,37 +8,37 @@ names from the Roblox API for published places.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local Commandline = require("@packages/Commandline")
-local CookieHelpers = require("@rbxstudiocli/Helpers/CookieHelpers")
-local fs = require("@lune/fs")
-local net = require("@lune/net")
-local process = require("@lune/process")
-local serde = require("@lune/serde")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const Commandline = require("@packages/Commandline")
+const CookieHelpers = require("@rbxstudiocli/Helpers/CookieHelpers")
+const fs = require("@lune/fs")
+const net = require("@lune/net")
+const process = require("@lune/process")
+const serde = require("@lune/serde")
 
-local LOG_DIR = (process.env.HOME or "") .. "/Library/Logs/Roblox"
+const LOG_DIR = (process.env.HOME or "") .. "/Library/Logs/Roblox"
 
 ------------------------------------------------------------------------------------------
 -- Roblox API helpers
 ------------------------------------------------------------------------------------------
 
-local placeNameCache: { [string]: string } = {}
+const placeNameCache: { [string]: string } = {}
 
-local function getPlaceName(placeId: string): string?
+const function getPlaceName(placeId: string): string?
     if placeNameCache[placeId] then
         return placeNameCache[placeId]
     end
 
-    local ok, response = pcall(net.request, {
+    const ok, response = pcall(net.request, {
         url = `https://games.roblox.com/v1/games/multiget-place-details?placeIds={placeId}`,
         method = "GET",
         headers = CookieHelpers.authHeaders(),
     })
 
     if ok and response.ok then
-        local success, data = pcall(serde.decode, "json" :: "json", response.body)
+        const success, data = pcall(serde.decode, "json" :: "json", response.body)
         if success and type(data) == "table" and #data > 0 then
-            local name = data[1].name
+            const name = data[1].name
             if name then
                 placeNameCache[placeId] = name
                 return name
@@ -53,22 +53,22 @@ end
 -- Log parsing
 ------------------------------------------------------------------------------------------
 
-local function getLogPath(crashHandlerArgs: string): string?
-    local logName = crashHandlerArgs:match("attachment_([%w%.%-_]+_last%.log)=")
+const function getLogPath(crashHandlerArgs: string): string?
+    const logName = crashHandlerArgs:match("attachment_([%w%.%-_]+_last%.log)=")
     if logName then
         return LOG_DIR .. "/" .. logName
     end
     return nil
 end
 
-local LogHelpers = require("@rbxstudiocli/Helpers/LogHelpers")
+const LogHelpers = require("@rbxstudiocli/Helpers/LogHelpers")
 type SessionInfo = LogHelpers.SessionInfo
 
-local function getSessionInfo(logPath: string): SessionInfo
+const function getSessionInfo(logPath: string): SessionInfo
     if not fs.isFile(logPath) then
         return { Status = "Unknown", PlaceId = nil, Highlight = nil }
     end
-    local content = fs.readFile(logPath)
+    const content = fs.readFile(logPath)
     return LogHelpers.parseSessionInfo(content, getPlaceName)
 end
 
@@ -76,9 +76,9 @@ end
 -- Table rendering
 ------------------------------------------------------------------------------------------
 
-local MemoryHelpers = require("@rbxstudiocli/Helpers/MemoryHelpers")
-local TableHelpers = require("@rbxstudiocli/Helpers/TableHelpers")
-local TimeHelpers = require("@rbxstudiocli/Helpers/TimeHelpers")
+const MemoryHelpers = require("@rbxstudiocli/Helpers/MemoryHelpers")
+const TableHelpers = require("@rbxstudiocli/Helpers/TableHelpers")
+const TimeHelpers = require("@rbxstudiocli/Helpers/TimeHelpers")
 type TableRow = TableHelpers.TableRow
 
 type StudioProcess = {
@@ -100,24 +100,24 @@ return Commandline.Command.new({
             process.exit(1)
         end
 
-        local result = process.exec("ps", { "-eo", "pid,rss,etime,args" })
+        const result = process.exec("ps", { "-eo", "pid,rss,etime,args" })
         if not result.ok then
             print(Colors.error("Failed to list processes."))
             process.exit(1)
         end
 
         -- Parse Studio processes and crash handlers
-        local studios: { StudioProcess } = {}
+        const studios: { StudioProcess } = {}
 
         for line in result.stdout:gmatch("[^\n]+") do
-            local pid, rss, etime = line:match("^%s*(%d+)%s+(%d+)%s+(%S+)")
+            const pid, rss, etime = line:match("^%s*(%d+)%s+(%d+)%s+(%S+)")
             if
                 pid
                 and line:find("RobloxStudio.app/Contents/MacOS/RobloxStudio")
                 and not line:find("RobloxCrashHandler")
             then
-                local coloredUptime, rawUptime = TimeHelpers.formatUptimeColored(etime)
-                local coloredMemory, rawMemory = MemoryHelpers.format(tonumber(rss) or 0)
+                const coloredUptime, rawUptime = TimeHelpers.formatUptimeColored(etime)
+                const coloredMemory, rawMemory = MemoryHelpers.format(tonumber(rss) or 0)
                 table.insert(studios, {
                     memory = coloredMemory,
                     memoryRaw = rawMemory,
@@ -133,7 +133,7 @@ return Commandline.Command.new({
         -- Match crash handlers to find log paths
         for line in result.stdout:gmatch("[^\n]+") do
             if line:find("RobloxCrashHandler") then
-                local studioPid = line:match("%-%-studioPid%s+(%d+)")
+                const studioPid = line:match("%-%-studioPid%s+(%d+)")
                 if studioPid then
                     for _, studio in studios do
                         if studio.pid == studioPid then
@@ -163,18 +163,18 @@ return Commandline.Command.new({
         end
 
         -- Build table rows with colored and raw versions
-        local rows: { TableRow } = {}
+        const rows: { TableRow } = {}
         for _, studio in studios do
-            local session = studio.session :: SessionInfo
-            local rawPlaceId = session.PlaceId or "nil"
-            local coloredPlaceId = if session.PlaceId then Colors.numericId(session.PlaceId) else Colors.nil_("nil")
+            const session = studio.session :: SessionInfo
+            const rawPlaceId = session.PlaceId or "nil"
+            const coloredPlaceId = if session.PlaceId then Colors.numericId(session.PlaceId) else Colors.nil_("nil")
 
             -- Color the highlight portion of the status. Escape
             -- pattern special characters since highlights may contain
             -- dots, dashes, etc.
             local coloredStatus = session.Status
             if session.Highlight then
-                local escaped = session.Highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
+                const escaped = session.Highlight:gsub("([%.%-%+%*%?%^%$%(%)%[%]%%])", "%%%1")
                 coloredStatus = coloredStatus:gsub(escaped, Colors.projectName(session.Highlight), 1)
             end
 
@@ -196,7 +196,7 @@ return Commandline.Command.new({
             })
         end
 
-        local count = tostring(#studios)
+        const count = tostring(#studios)
         print(
             `There {if #studios == 1 then "is" else "are"} {Colors.count(count)} Roblox Studio {if #studios
                     == 1

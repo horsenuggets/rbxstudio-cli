@@ -7,16 +7,16 @@ and managing Roblox Studio sessions.
 
 --]]
 
-local ApiCommand = require("@self/ApiCommand")
-local Commandline = require("@packages/Commandline")
-local InstallCommand = require("@self/InstallCommand")
-local KillCommand = require("@self/KillCommand")
-local ListCommand = require("@self/ListCommand")
-local NewCommand = require("@self/NewCommand")
-local OpenCommand = require("@self/OpenCommand")
-local StartCommand = require("@self/StartCommand")
-local UpdateCommand = require("@self/UpdateCommand")
-local __VERSION__ = require("@self/__VERSION__")
+const ApiCommand = require("@self/ApiCommand")
+const Commandline = require("@packages/Commandline")
+const InstallCommand = require("@self/InstallCommand")
+const KillCommand = require("@self/KillCommand")
+const ListCommand = require("@self/ListCommand")
+const NewCommand = require("@self/NewCommand")
+const OpenCommand = require("@self/OpenCommand")
+const StartCommand = require("@self/StartCommand")
+const UpdateCommand = require("@self/UpdateCommand")
+const __VERSION__ = require("@self/__VERSION__")
 
 return Commandline.Command.new({
     Name = "rbxstudio",

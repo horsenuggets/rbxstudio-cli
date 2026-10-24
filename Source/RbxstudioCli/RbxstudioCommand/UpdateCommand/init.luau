@@ -8,25 +8,25 @@ the current ones in-place.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
-local Commandline = require("@packages/Commandline")
-local RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
-local __ROJO_VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__ROJO_VERSION__")
-local __VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__VERSION__")
-local fs = require("@lune/fs")
-local net = require("@lune/net")
-local process = require("@lune/process")
-local serde = require("@lune/serde")
+const Chalk = require("@packages/Chalk")
+const Commandline = require("@packages/Commandline")
+const RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
+const __ROJO_VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__ROJO_VERSION__")
+const __VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__VERSION__")
+const fs = require("@lune/fs")
+const net = require("@lune/net")
+const process = require("@lune/process")
+const serde = require("@lune/serde")
 
-local SelfUpdate = Commandline.Toolkit._SelfUpdate
+const SelfUpdate = Commandline.Toolkit._SelfUpdate
 
-local NAME = "rbxstudio"
-local REPOSITORY = "horsenuggets/rbxstudio-cli"
+const NAME = "rbxstudio"
+const REPOSITORY = "horsenuggets/rbxstudio-cli"
 
-local IS_WINDOWS = process.os == "windows"
-local EXECUTABLE_SUFFIX = if IS_WINDOWS then ".exe" else ""
+const IS_WINDOWS = process.os == "windows"
+const EXECUTABLE_SUFFIX = if IS_WINDOWS then ".exe" else ""
 
-local function getRelease(targetVersion: string?): { version: string, assets: { any } }?
+const function getRelease(targetVersion: string?): { version: string, assets: { any } }?
     local url: string
     if targetVersion then
         url = `https://api.github.com/repos/{REPOSITORY}/releases/tags/{targetVersion}`
@@ -34,7 +34,7 @@ local function getRelease(targetVersion: string?): { version: string, assets: { 
         url = `https://api.github.com/repos/{REPOSITORY}/releases/latest`
     end
 
-    local ok, response = pcall(net.request, {
+    const ok, response = pcall(net.request, {
         url = url,
         method = "GET",
         headers = { ["User-Agent"] = NAME },
@@ -43,7 +43,7 @@ local function getRelease(targetVersion: string?): { version: string, assets: { 
         return nil
     end
 
-    local success, data = pcall(serde.decode, "json" :: "json", response.body)
+    const success, data = pcall(serde.decode, "json" :: "json", response.body)
     if not success then
         return nil
     end
@@ -66,10 +66,10 @@ return Commandline.Command.new({
         }),
     },
     Impl = function(args)
-        local targetVersion = args.version
+        const targetVersion = args.version
 
         -- Clean up leftover .old file from previous Windows update
-        local currentExe = SelfUpdate.findExecutable(NAME)
+        const currentExe = SelfUpdate.findExecutable(NAME)
         if currentExe then
             SelfUpdate.cleanupOldBinary(currentExe)
         end
@@ -77,7 +77,7 @@ return Commandline.Command.new({
         -- Update rbxstudio binary
         print(`Checking for updates to {Chalk.bold(Chalk.blueBright(NAME))}...`)
 
-        local release = getRelease(targetVersion)
+        const release = getRelease(targetVersion)
         if not release then
             print(
                 Chalk.red(
@@ -87,15 +87,15 @@ return Commandline.Command.new({
             process.exit(1)
         end
 
-        local newVersion = release.version
+        const newVersion = release.version
         if newVersion == __VERSION__ and not targetVersion then
             print(`Already on the latest version ({Chalk.bold(Chalk.blueBright(__VERSION__))}).`)
         else
             print(`Updating from {Chalk.dim(__VERSION__)} to {Chalk.bold(Chalk.blueBright(newVersion))}...`)
 
             -- Find download URL for current platform
-            local platformSuffix = SelfUpdate.getPlatformSuffix()
-            local assetName = `{NAME}-{platformSuffix}{EXECUTABLE_SUFFIX}`
+            const platformSuffix = SelfUpdate.getPlatformSuffix()
+            const assetName = `{NAME}-{platformSuffix}{EXECUTABLE_SUFFIX}`
             local downloadUrl: string? = nil
 
             for _, asset in release.assets do
@@ -111,7 +111,7 @@ return Commandline.Command.new({
             end
 
             -- Download new binary
-            local dlOk, dlResponse = pcall(net.request, {
+            const dlOk, dlResponse = pcall(net.request, {
                 url = downloadUrl,
                 method = "GET",
                 headers = { ["User-Agent"] = NAME },
@@ -137,8 +137,8 @@ return Commandline.Command.new({
 
         -- Update bundled Rojo
         print()
-        local rojoBinPath = RojoHelpers.getRojoBinPath()
-        local rojoInstalled = fs.isFile(rojoBinPath)
+        const rojoBinPath = RojoHelpers.getRojoBinPath()
+        const rojoInstalled = fs.isFile(rojoBinPath)
 
         if rojoInstalled then
             print(`Updating bundled {Chalk.bold(Chalk.blueBright("Rojo"))} to {Chalk.dim(__ROJO_VERSION__)}...`)
@@ -146,7 +146,7 @@ return Commandline.Command.new({
             print(`Installing bundled {Chalk.bold(Chalk.blueBright("Rojo"))} {Chalk.dim(__ROJO_VERSION__)}...`)
         end
 
-        local binDir = string.match(rojoBinPath, "(.+)/[^/]+$") or ""
+        const binDir = string.match(rojoBinPath, "(.+)/[^/]+$") or ""
         if not fs.isDir(binDir) then
             fs.writeDir(binDir)
         end
