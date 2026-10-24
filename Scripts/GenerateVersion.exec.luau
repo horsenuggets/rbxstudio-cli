@@ -2,13 +2,13 @@
 
 --[[
 
-GenerateVersion
+GenerateVersion.exec
 
 Reads the VERSION file and generates version modules for embedding at build time.
 Also extracts the Rojo version from rokit.toml so the CLI knows which version to
 download during install/update.
 
-[Usage] ./Scripts/GenerateVersion.luau
+[Usage] ./Scripts/GenerateVersion.exec.luau
 
 --]]
 
@@ -22,7 +22,9 @@ local function extractRojoVersion(): string
     return version
 end
 
-local function generateVersion()
+const GenerateVersion = {}
+
+function GenerateVersion.exec()
     Toolkit.generateVersion({
         VersionFile = "VERSION",
         OutputPath = "Source/RbxstudioCli/RbxstudioCommand/__VERSION__.luau",
@@ -39,4 +41,4 @@ local function generateVersion()
     print("Generated Rojo version module with version " .. Chalk.bold(Chalk.blueBright(rojoVersion)) .. ".")
 end
 
-generateVersion()
+GenerateVersion.exec()

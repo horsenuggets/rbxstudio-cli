@@ -2,7 +2,7 @@
 
 --[[
 
-DemoList
+DemoList.exec
 
 Renders a mock list table to preview the color scheme and memory
 gradient across a range of values without needing running Studio
@@ -100,7 +100,9 @@ local MOCK_DATA: { MockEntry } = {
     },
 }
 
-local function demoList()
+const DemoList = {}
+
+function DemoList.exec()
     local rows: { TableHelpers.TableRow } = {}
 
     for _, entry in MOCK_DATA do
@@ -143,4 +145,4 @@ local function demoList()
     TableHelpers.render({ "Process ID", "Memory", "Uptime", "Place ID", "Status" }, rows)
 end
 
-demoList()
+DemoList.exec()

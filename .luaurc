@@ -4,6 +4,7 @@
         "lune": "~/.lune/.typedefs/0.11.1-horse.16.1/",
         "packages": "./Packages/",
         "rbxstudiocli": "./Source/RbxstudioCli/",
+        "submodules": "./Submodules/",
         "tests": "./Tests/"
     },
     "globals": [
