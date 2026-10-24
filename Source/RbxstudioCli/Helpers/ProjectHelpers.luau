@@ -8,7 +8,6 @@ that Studio can open.
 
 --]]
 
-const Chalk = require("@packages/Chalk")
 const Colors = require("@rbxstudiocli/Helpers/Colors")
 const RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
 const fs = require("@lune/fs")

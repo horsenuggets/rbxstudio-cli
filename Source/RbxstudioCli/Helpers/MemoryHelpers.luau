@@ -9,7 +9,6 @@ orange to red at 6 GB+.
 --]]
 
 const Chalk = require("@packages/Chalk")
-const Colors = require("@rbxstudiocli/Helpers/Colors")
 
 const MemoryHelpers = {}
 
