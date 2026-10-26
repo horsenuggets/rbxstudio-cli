@@ -84,10 +84,8 @@ const function downloadLatestBinary(destPath: string): boolean
         return false
     end
 
-    fs.writeFile(destPath, dlResponse.body)
-    if not IS_WINDOWS then
-        process.exec("chmod", { "+x", destPath })
-    end
+    -- Replace rather than overwrite, so a running copy at destPath isn't corrupted
+    SelfUpdate.replaceBinary({ targetPath = destPath, newContents = dlResponse.body })
 
     return true
 end
@@ -158,11 +156,8 @@ return Commandline.Command.new({
         -- Try to copy current running binary first
         const currentExe = SelfUpdate.findExecutable(NAME)
         if currentExe then
-            const contents = fs.readFile(currentExe)
-            fs.writeFile(binaryPath, contents)
-            if not IS_WINDOWS then
-                process.exec("chmod", { "+x", binaryPath })
-            end
+            -- Safe even when currentExe is binaryPath, since the source is read in full first
+            SelfUpdate.copyBinary({ sourcePath = currentExe, targetPath = binaryPath })
             print(`Copied executable to {Chalk.dim(binaryPath)}.`)
         else
             -- Download from GitHub releases
