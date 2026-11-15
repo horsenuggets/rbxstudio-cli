@@ -36,47 +36,47 @@ locals {
 
     # Must match the job `name:` fields of every workflow that runs on PRs to main.
     main_checks = [
-        "Build CLI linux-x86_64",
-        "Build CLI macos-aarch64",
-        "Build CLI windows-x86_64",
-        "Check .luaurc format",
-        "Check changelog format",
-        "Check file headers",
-        "Check for tabs",
-        "Check formatting",
-        "Check JSON format",
-        "Check rokit.toml format",
-        "Check version match",
-        "Check wally.toml format",
-        "Run tests",
-        "Static analysis",
-        "Test install on linux",
-        "Test install on macos",
-        "Test install on windows",
-        "Validate branch name"
+        "build-cli-linux-x86_64",
+        "build-cli-macos-aarch64",
+        "build-cli-windows-x86_64",
+        "check-changelog-format",
+        "check-file-headers",
+        "check-for-tabs",
+        "check-formatting",
+        "check-json-format",
+        "check-luaurc-format",
+        "check-rokit-format",
+        "check-version-match",
+        "check-wally-format",
+        "run-tests",
+        "static-analysis",
+        "test-install-linux",
+        "test-install-macos",
+        "test-install-windows",
+        "validate-branch-name"
     ]
 
     # Must match the job `name:` fields of every workflow that runs on PRs to release.
     release_checks = [
-        "Build CLI linux-x86_64",
-        "Build CLI macos-aarch64",
-        "Build CLI windows-x86_64",
-        "Build test linux-aarch64",
-        "Build test linux-x86_64",
-        "Build test macos-aarch64",
-        "Build test macos-x86_64",
-        "Build test windows-aarch64",
-        "Build test windows-x86_64",
-        "Check formatting",
-        "Check JSON format",
-        "Run tests",
-        "Static analysis",
-        "Test install on linux",
-        "Test install on macos",
-        "Test install on windows",
-        "Validate PR title",
-        "Validate version",
-        "Verify diff matches main"
+        "build-cli-linux-x86_64",
+        "build-cli-macos-aarch64",
+        "build-cli-windows-x86_64",
+        "build-test-linux-aarch64",
+        "build-test-linux-x86_64",
+        "build-test-macos-aarch64",
+        "build-test-macos-x86_64",
+        "build-test-windows-aarch64",
+        "build-test-windows-x86_64",
+        "check-formatting",
+        "check-json-format",
+        "run-tests",
+        "static-analysis",
+        "test-install-linux",
+        "test-install-macos",
+        "test-install-windows",
+        "validate-pr-title",
+        "validate-version",
+        "verify-diff-matches-main"
     ]
 }
 
@@ -141,7 +141,7 @@ resource "github_repository_ruleset" "main" {
                 for_each = local.main_checks
                 content {
                     context = required_check.value
-                    integration_id = 0
+                    integration_id = 15368
                 }
             }
         }
@@ -177,7 +177,7 @@ resource "github_repository_ruleset" "release" {
                 for_each = local.release_checks
                 content {
                     context = required_check.value
-                    integration_id = 0
+                    integration_id = 15368
                 }
             }
         }
