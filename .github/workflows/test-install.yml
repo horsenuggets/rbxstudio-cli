@@ -1,4 +1,4 @@
-name: Test install command
+name: Test Install
 
 on:
   pull_request:
@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build CLI ${{ matrix.target }}
+  build-cli:
+    name: build-cli-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -40,8 +40,8 @@ jobs:
           path: Build/rbxstudio*
 
   test-install:
-    name: Test install on ${{ matrix.os }}
-    needs: [build]
+    name: test-install-${{ matrix.os }}
+    needs: [build-cli]
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
