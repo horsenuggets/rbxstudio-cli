@@ -68,28 +68,27 @@ const function readFromFile(): string?
     return nil
 end
 
--- Saves the cookie to ~/.rbxstudio-cli/.cookie. The file is created empty with
--- owner-only permissions first, so the secret is never readable by other users,
--- and nothing is written if that fails.
+-- Writes the cookie into a uniquely named owner-only file and renames it over
+-- the cache. The secret only ever passes through a file this process created,
+-- so another run deleting or replacing the cache cannot loosen its permissions.
+const SAVE_SCRIPT = 'umask 077 && tmp=$(mktemp "$1.XXXXXX") && cat > "$tmp" && mv -f "$tmp" "$1"'
+
+-- Saves the cookie to ~/.rbxstudio-cli/.cookie, readable only by its owner.
 const function saveToFile(cookie: string)
     const dir = COOKIE_PATH:match("(.+)/[^/]+$")
     if dir and not fs.isDir(dir) then
         fs.writeDir(dir)
     end
 
-    if process.os ~= "windows" then
-        -- A leftover file may have looser permissions, and chmod alone would
-        -- leave a window, so it is replaced rather than reused.
-        if fs.isFile(COOKIE_PATH) then
-            fs.removeFile(COOKIE_PATH)
-        end
-        const created = process.exec("sh", { "-c", 'umask 077 && : > "$1"', "sh", COOKIE_PATH })
-        if not created.ok then
-            return
-        end
+    if process.os == "windows" then
+        -- A user profile is already private to its owner on Windows.
+        fs.writeFile(COOKIE_PATH, cookie .. "\n")
+        return
     end
 
-    fs.writeFile(COOKIE_PATH, cookie .. "\n")
+    process.exec("sh", { "-c", SAVE_SCRIPT, "sh", COOKIE_PATH }, {
+        stdio = { stdin = cookie .. "\n" },
+    })
 end
 
 --[[
