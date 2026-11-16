@@ -3,26 +3,24 @@
 InstallCommand
 
 Installs the rbxstudio CLI and bundled Rojo binary to ~/.rbxstudio-cli/bin/
-and adds the directory to PATH. Downloads the platform-appropriate Rojo binary
+and adds the directory to PATH. Downloads the platform-appropriate binaries
 from GitHub releases.
 
 --]]
 
 const Chalk = require("@packages/Chalk")
+const CliRelease = require("@rbxstudiocli/Helpers/CliRelease")
 const Commandline = require("@packages/Commandline")
 const RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
 const __ROJO_VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__ROJO_VERSION__")
 const __VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__VERSION__")
 const fs = require("@lune/fs")
-const net = require("@lune/net")
 const process = require("@lune/process")
-const serde = require("@lune/serde")
 
 const SelfUpdate = Commandline.Toolkit._SelfUpdate
 
 const NAME = "rbxstudio"
 const INSTALL_DIR = ".rbxstudio-cli"
-const REPOSITORY = "horsenuggets/rbxstudio-cli"
 
 const IS_WINDOWS = process.os == "windows"
 const HOME_DIR = if IS_WINDOWS then process.env.USERPROFILE or "" else process.env.HOME or ""
@@ -39,55 +37,14 @@ const SHELL_CONFIGS = {
 const XSH_PATH_FILE = HOME_DIR .. "/.path"
 
 const function downloadLatestBinary(destPath: string): boolean
-    const url = `https://api.github.com/repos/{REPOSITORY}/releases/latest`
-    const ok, response = pcall(net.request, {
-        url = url,
-        method = "GET",
-        headers = { ["User-Agent"] = NAME },
-    })
-
-    if not ok or not response.ok then
-        print(Chalk.red("Failed to fetch latest release."))
-        return false
-    end
-
-    const success, release = pcall(serde.decode, "json" :: "json", response.body)
-    if not success then
-        print(Chalk.red("Failed to parse release data."))
-        return false
-    end
-
-    const platformSuffix = SelfUpdate.getPlatformSuffix()
-    const assetName = `{NAME}-{platformSuffix}{EXECUTABLE_SUFFIX}`
-    local downloadUrl: string? = nil
-
-    for _, asset in release.assets or {} do
-        if asset.name == assetName then
-            downloadUrl = asset.browser_download_url
-            break
-        end
-    end
-
-    if not downloadUrl then
-        print(Chalk.red(`Asset "{assetName}" not found in latest release.`))
-        return false
-    end
-
-    const dlOk, dlResponse = pcall(net.request, {
-        url = downloadUrl,
-        method = "GET",
-        headers = { ["User-Agent"] = NAME },
-    })
-
-    if not dlOk or not dlResponse.ok then
-        print(Chalk.red("Failed to download binary."))
+    const release = CliRelease.getRelease(nil)
+    if release == nil then
+        print(Chalk.red("Failed to find a release for this platform."))
         return false
     end
 
     -- Replace rather than overwrite, so a running copy at destPath isn't corrupted
-    SelfUpdate.replaceBinary({ targetPath = destPath, newContents = dlResponse.body })
-
-    return true
+    return CliRelease.install(release, destPath)
 end
 
 const function addToPath()

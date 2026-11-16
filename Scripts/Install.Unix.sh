@@ -12,6 +12,7 @@ dependencies=(
     curl
     uname
     tr
+    unzip
 )
 
 for dep in "${dependencies[@]}"; do
@@ -56,8 +57,8 @@ else
     printf "\n[1 / 4] Looking for the latest $PROGRAM_NAME release.\n"
 fi
 
-# Build the binary name pattern
-BINARY_NAME="${PROGRAM_NAME}-${OS}-${ARCH}"
+# Build the archive name pattern
+BINARY_NAME="${PROGRAM_NAME}-${OS}-${ARCH}.zip"
 
 # Fetch release data from GitHub API
 if [ -n "$GITHUB_PAT" ]; then
@@ -104,7 +105,7 @@ while IFS= read -r current_line; do
 done <<< "$RELEASE_JSON_DATA"
 
 if [ -z "$DOWNLOAD_URL" ]; then
-    echo "Failed to find the binary \"$BINARY_NAME\" in the release." >&2
+    echo "Failed to find the archive \"$BINARY_NAME\" in the release." >&2
     exit 1
 fi
 
@@ -112,19 +113,28 @@ fi
 echo "[2 / 4] Creating installation directory."
 mkdir -p "$BIN_DIR"
 
-# Download the binary
+# Download the archive
 echo "[3 / 4] Downloading \"$BINARY_NAME\"."
-BIN_DEST="$BIN_DIR/$PROGRAM_NAME"
+ZIP_DEST="$BIN_DIR/.$PROGRAM_NAME-download.zip"
 if [ -n "$GITHUB_PAT" ]; then
-    curl --proto '=https' --tlsv1.2 -L -o "$BIN_DEST" -sSf "$DOWNLOAD_URL" \
+    curl --proto '=https' --tlsv1.2 -L -o "$ZIP_DEST" -sSf "$DOWNLOAD_URL" \
         -H "Authorization: token $GITHUB_PAT"
 else
-    curl --proto '=https' --tlsv1.2 -L -o "$BIN_DEST" -sSf "$DOWNLOAD_URL"
+    curl --proto '=https' --tlsv1.2 -L -o "$ZIP_DEST" -sSf "$DOWNLOAD_URL"
 fi
 
+if [ ! -f "$ZIP_DEST" ] || [ ! -s "$ZIP_DEST" ]; then
+    echo "Failed to download the archive." >&2
+    rm -f "$ZIP_DEST"
+    exit 1
+fi
+
+BIN_DEST="$BIN_DIR/$PROGRAM_NAME"
+unzip -o -q "$ZIP_DEST" -d "$BIN_DIR"
+rm -f "$ZIP_DEST"
+
 if [ ! -f "$BIN_DEST" ] || [ ! -s "$BIN_DEST" ]; then
-    echo "Failed to download the binary." >&2
-    rm -f "$BIN_DEST"
+    echo "The archive did not contain \"$PROGRAM_NAME\"." >&2
     exit 1
 fi
 chmod +x "$BIN_DEST"

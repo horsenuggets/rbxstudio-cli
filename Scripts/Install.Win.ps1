@@ -84,12 +84,12 @@ try {
     Write-Host "Found version $releaseVersion."
 
     # Find the download URL
-    $binaryName = "$PROGRAM_NAME-windows-$arch.exe"
+    $archiveName = "$PROGRAM_NAME-windows-$arch.zip"
 
-    $asset = $releaseInfo.assets | Where-Object { $_.name -eq $binaryName } | Select-Object -First 1
+    $asset = $releaseInfo.assets | Where-Object { $_.name -eq $archiveName } | Select-Object -First 1
 
     if (-not $asset) {
-        throw "Could not find the binary `"$binaryName`" in the release."
+        throw "Could not find the archive `"$archiveName`" in the release."
     }
 
     $downloadUrl = $asset.browser_download_url
@@ -98,18 +98,23 @@ try {
     Write-Host "[2 / 4] Creating installation directory."
     New-Item -ItemType Directory -Force -Path $BIN_DIR | Out-Null
 
-    # Download the binary
-    Write-Host "[3 / 4] Downloading `"$binaryName`"."
+    # Download and extract the archive
+    Write-Host "[3 / 4] Downloading `"$archiveName`"."
+    $zipDest = "$BIN_DIR\.$PROGRAM_NAME-download.zip"
     $binDest = "$BIN_DIR\$PROGRAM_NAME.exe"
     try {
-        Invoke-WebRequest $downloadUrl -OutFile $binDest -ErrorAction Stop
+        Invoke-WebRequest $downloadUrl -OutFile $zipDest -ErrorAction Stop
+        Expand-Archive -Path $zipDest -DestinationPath $BIN_DIR -Force
     }
     catch {
-        throw "Failed to download binary from $downloadUrl. $_"
+        throw "Failed to download the archive from $downloadUrl. $_"
+    }
+    finally {
+        Remove-Item -Force -ErrorAction SilentlyContinue $zipDest
     }
 
     if (-not (Test-Path $binDest)) {
-        throw "Failed to download the binary."
+        throw "Failed to install the binary."
     }
 
     # Configure PATH
