@@ -83,31 +83,44 @@ try {
     $releaseVersion = $releaseInfo.tag_name
     Write-Host "Found version $releaseVersion."
 
-    # Find the download URL
+    # Releases publish a zip per target. Releases before 1.0.3 only have a bare
+    # binary, so a tagged install of one of those falls back to it.
     $archiveName = "$PROGRAM_NAME-windows-$arch.zip"
+    $legacyName = "$PROGRAM_NAME-windows-$arch.exe"
 
     $asset = $releaseInfo.assets | Where-Object { $_.name -eq $archiveName } | Select-Object -First 1
-
+    $isArchive = [bool]$asset
     if (-not $asset) {
-        throw "Could not find the archive `"$archiveName`" in the release."
+        $asset = $releaseInfo.assets | Where-Object { $_.name -eq $legacyName } | Select-Object -First 1
     }
 
+    if (-not $asset) {
+        throw "Could not find `"$archiveName`" or `"$legacyName`" in the release."
+    }
+
+    $assetName = $asset.name
     $downloadUrl = $asset.browser_download_url
 
     # Create installation directory
     Write-Host "[2 / 4] Creating installation directory."
     New-Item -ItemType Directory -Force -Path $BIN_DIR | Out-Null
 
-    # Download and extract the archive
-    Write-Host "[3 / 4] Downloading `"$archiveName`"."
+    # Download the asset
+    Write-Host "[3 / 4] Downloading `"$assetName`"."
     $zipDest = "$BIN_DIR\.$PROGRAM_NAME-download.zip"
     $binDest = "$BIN_DIR\$PROGRAM_NAME.exe"
     try {
-        Invoke-WebRequest $downloadUrl -OutFile $zipDest -ErrorAction Stop
-        Expand-Archive -Path $zipDest -DestinationPath $BIN_DIR -Force
+        if ($isArchive) {
+            Invoke-WebRequest $downloadUrl -OutFile $zipDest -ErrorAction Stop
+            # Without Stop, a failed extraction is non-terminating, and a binary
+            # left by an earlier install would pass for the new one.
+            Expand-Archive -Path $zipDest -DestinationPath $BIN_DIR -Force -ErrorAction Stop
+        } else {
+            Invoke-WebRequest $downloadUrl -OutFile $binDest -ErrorAction Stop
+        }
     }
     catch {
-        throw "Failed to download the archive from $downloadUrl. $_"
+        throw "Failed to install `"$assetName`" from $downloadUrl. $_"
     }
     finally {
         Remove-Item -Force -ErrorAction SilentlyContinue $zipDest

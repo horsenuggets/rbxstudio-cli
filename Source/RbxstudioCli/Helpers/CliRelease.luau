@@ -4,7 +4,8 @@ CliRelease
 
 Finds and installs the rbxstudio CLI from its GitHub releases. Releases publish
 one zip per target, named "rbxstudio-<target>.zip", which is the layout Rokit
-expects when installing the same release.
+expects when installing the same release. Releases before 1.0.3 only publish a
+bare binary, so those still install directly.
 
 --]]
 
@@ -26,9 +27,40 @@ const EXECUTABLE_SUFFIX = if IS_WINDOWS then ".exe" else ""
 const CliRelease = {}
 
 export type Release = {
+    -- Archives need extracting; a legacy bare binary is written straight out.
+    IsArchive: boolean,
     Version: string,
     DownloadUrl: string,
 }
+
+--[[
+    Picks the asset for a platform from a release's asset names. The zip wins
+    when both exist, and a release from before zips were published falls back
+    to its bare binary. Returns the chosen name and whether it is an archive.
+]]
+function CliRelease.selectAsset(
+    assetNames: { string },
+    platformSuffix: string,
+    executableSuffix: string
+): (string?, boolean)
+    const archiveName = `{NAME}-{platformSuffix}.zip`
+    const binaryName = `{NAME}-{platformSuffix}{executableSuffix}`
+
+    if table.find(assetNames, archiveName) then
+        return archiveName, true
+    elseif table.find(assetNames, binaryName) then
+        return binaryName, false
+    end
+    return nil, false
+end
+
+--[[
+    Returns the folder holding `path`, accepting both separators, since Windows
+    reports the running executable with backslashes.
+]]
+function CliRelease.parentDir(path: string): string
+    return string.match(path, "^(.*)[/\\][^/\\]+$") or "."
+end
 
 --[[
     Finds the release for this platform, from an exact tag when one is given.
@@ -53,10 +85,17 @@ function CliRelease.getRelease(targetVersion: string?): Release?
         return nil
     end
 
-    const assetName = `{NAME}-{SelfUpdate.getPlatformSuffix()}.zip`
-    for _, asset in data.assets or {} do
+    const assets = data.assets or {}
+    const assetNames = {}
+    for _, asset in assets do
+        table.insert(assetNames, asset.name)
+    end
+
+    const assetName, isArchive = CliRelease.selectAsset(assetNames, SelfUpdate.getPlatformSuffix(), EXECUTABLE_SUFFIX)
+    for _, asset in assets do
         if asset.name == assetName then
             return {
+                IsArchive = isArchive,
                 Version = data.tag_name,
                 DownloadUrl = asset.browser_download_url,
             }
@@ -80,7 +119,15 @@ function CliRelease.install(release: Release, destPath: string): boolean
         return false
     end
 
-    const parent = string.match(destPath, "^(.*)/[^/]+$") or "."
+    if not release.IsArchive then
+        SelfUpdate.replaceBinary({
+            targetPath = destPath,
+            newContents = response.body,
+        })
+        return true
+    end
+
+    const parent = CliRelease.parentDir(destPath)
     const zipPath = `{parent}/.{NAME}-download.zip`
     const extractDir = `{parent}/.{NAME}-extract`
 

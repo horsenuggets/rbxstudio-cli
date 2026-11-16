@@ -1,8 +1,9 @@
 # Changelog
 
 ## 1.0.3
-- Publish release assets as "rbxstudio-<target>.zip" so Rokit can install the CLI
+- Publish "rbxstudio-<target>.zip" next to each bare binary so Rokit can install the CLI
 - Download and extract the archive in the install scripts, "rbxstudio install", and "rbxstudio update"
+- Fall back to the bare binary for releases from before archives were published
 - Move zip extraction into ArchiveHelpers and share release downloads through CliRelease
 
 ## 1.0.2
