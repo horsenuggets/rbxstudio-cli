@@ -113,8 +113,9 @@ try {
         if ($isArchive) {
             Invoke-WebRequest $downloadUrl -OutFile $zipDest -ErrorAction Stop
             # Without Stop, a failed extraction is non-terminating, and a binary
-            # left by an earlier install would pass for the new one.
-            Expand-Archive -Path $zipDest -DestinationPath $BIN_DIR -Force -ErrorAction Stop
+            # left by an earlier install would pass for the new one. LiteralPath
+            # keeps brackets in a profile folder name from acting as wildcards.
+            Expand-Archive -LiteralPath $zipDest -DestinationPath $BIN_DIR -Force -ErrorAction Stop
         } else {
             Invoke-WebRequest $downloadUrl -OutFile $binDest -ErrorAction Stop
         }
@@ -123,10 +124,10 @@ try {
         throw "Failed to install `"$assetName`" from $downloadUrl. $_"
     }
     finally {
-        Remove-Item -Force -ErrorAction SilentlyContinue $zipDest
+        Remove-Item -Force -ErrorAction SilentlyContinue -LiteralPath $zipDest
     }
 
-    if (-not (Test-Path $binDest)) {
+    if (-not (Test-Path -LiteralPath $binDest)) {
         throw "Failed to install the binary."
     }
 

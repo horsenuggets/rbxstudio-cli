@@ -11,6 +11,7 @@ from GitHub releases.
 const Chalk = require("@packages/Chalk")
 const CliRelease = require("@rbxstudiocli/Helpers/CliRelease")
 const Commandline = require("@packages/Commandline")
+const PowerShell = require("@rbxstudiocli/Helpers/PowerShell")
 const RojoHelpers = require("@rbxstudiocli/Helpers/RojoHelpers")
 const __ROJO_VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__ROJO_VERSION__")
 const __VERSION__ = require("@rbxstudiocli/RbxstudioCommand/__VERSION__")
@@ -49,13 +50,7 @@ end
 
 const function addToPath()
     if IS_WINDOWS then
-        const psCmd = "$p = [Environment]::GetEnvironmentVariable('PATH','User');"
-            .. " if ($p -notlike '*"
-            .. BIN_DIR
-            .. "*') { [Environment]::SetEnvironmentVariable('PATH', '"
-            .. BIN_DIR
-            .. ";' + $p, 'User') }"
-        const result = process.exec("powershell", { "-Command", psCmd })
+        const result = process.exec("powershell", { "-Command", PowerShell.addToUserPathCommand(BIN_DIR) })
         if result.ok then
             print(`Added {Chalk.dim(BIN_DIR)} to user PATH.`)
         end
