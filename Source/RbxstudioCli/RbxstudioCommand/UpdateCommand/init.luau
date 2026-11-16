@@ -32,8 +32,8 @@ return Commandline.Command.new({
             Type = "string",
         }),
     },
-    Impl = function(args)
-        const targetVersion = args.version
+    Impl = function(_args, flags)
+        const targetVersion: string? = flags.version and flags.version.Value
 
         -- Clean up leftover .old file from previous Windows update
         const currentExe = SelfUpdate.findExecutable(NAME)

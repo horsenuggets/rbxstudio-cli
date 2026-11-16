@@ -146,25 +146,31 @@ if [ ! -f "$DOWNLOAD_DEST" ] || [ ! -s "$DOWNLOAD_DEST" ]; then
     exit 1
 fi
 
+# The new binary is staged and checked before it replaces the installed one, so
+# a corrupt archive or a full disk leaves a working installation alone.
+STAGED_BIN="$DOWNLOAD_DEST"
+EXTRACT_DIR="$BIN_DIR/.$PROGRAM_NAME-extract"
 if [ "$ASSET_NAME" = "$ARCHIVE_NAME" ]; then
-    # Remove the old binary first, so a failed extraction can't pass for a
-    # successful install.
-    rm -f "$BIN_DEST"
-    if ! unzip -o -q "$DOWNLOAD_DEST" -d "$BIN_DIR"; then
-        rm -f "$DOWNLOAD_DEST"
+    rm -rf "$EXTRACT_DIR"
+    mkdir -p "$EXTRACT_DIR"
+    if ! unzip -o -q "$DOWNLOAD_DEST" -d "$EXTRACT_DIR"; then
+        rm -rf "$DOWNLOAD_DEST" "$EXTRACT_DIR"
         echo "Failed to extract \"$ASSET_NAME\"." >&2
         exit 1
     fi
     rm -f "$DOWNLOAD_DEST"
-else
-    mv -f "$DOWNLOAD_DEST" "$BIN_DEST"
+    STAGED_BIN="$EXTRACT_DIR/$PROGRAM_NAME"
 fi
 
-if [ ! -f "$BIN_DEST" ] || [ ! -s "$BIN_DEST" ]; then
+if [ ! -f "$STAGED_BIN" ] || [ ! -s "$STAGED_BIN" ]; then
+    rm -rf "$DOWNLOAD_DEST" "$EXTRACT_DIR"
     echo "The download did not contain \"$PROGRAM_NAME\"." >&2
     exit 1
 fi
-chmod +x "$BIN_DEST"
+
+chmod +x "$STAGED_BIN"
+mv -f "$STAGED_BIN" "$BIN_DEST"
+rm -rf "$EXTRACT_DIR"
 
 # Configure PATH
 printf "[4 / 4] Configuring PATH.\n\n"
