@@ -3,11 +3,12 @@
 RojoHelpers
 
 Utilities for managing the bundled Rojo binary. Handles resolving the Rojo
-executable path (bundled or system), downloading platform-specific binaries
-from GitHub releases, and extracting zip archives.
+executable path (bundled or system) and downloading platform-specific binaries
+from GitHub releases.
 
 --]]
 
+const ArchiveHelpers = require("./ArchiveHelpers")
 const Chalk = require("@packages/Chalk")
 const Commandline = require("@packages/Commandline")
 const fs = require("@lune/fs")
@@ -58,23 +59,6 @@ function RojoHelpers.resolveRojo(): string
     print(Chalk.red('Rojo not found. Install it with "rbxstudio install" or add it to your PATH.'))
     process.exit(1)
     return "" -- unreachable
-end
-
---[[
-    Extracts a zip archive to the given destination directory.
-    Uses platform-appropriate tools (unzip on Unix, PowerShell on Windows).
-]]
-function RojoHelpers.extractZip(zipPath: string, destDir: string): boolean
-    local result
-    if IS_WINDOWS then
-        result = process.exec("powershell", {
-            "-Command",
-            `Expand-Archive -Path '{zipPath}' -DestinationPath '{destDir}' -Force`,
-        })
-    else
-        result = process.exec("unzip", { "-o", zipPath, "-d", destDir })
-    end
-    return result.ok
 end
 
 --[[
@@ -142,7 +126,7 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
     const zipPath = `{binDir}/.rojo-download.zip`
     fs.writeFile(zipPath, dlResponse.body)
 
-    const extracted = RojoHelpers.extractZip(zipPath, binDir)
+    const extracted = ArchiveHelpers.extractZip(zipPath, binDir)
 
     -- Clean up zip
     if fs.isFile(zipPath) then

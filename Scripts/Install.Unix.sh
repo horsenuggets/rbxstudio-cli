@@ -12,6 +12,7 @@ dependencies=(
     curl
     uname
     tr
+    unzip
 )
 
 for dep in "${dependencies[@]}"; do
@@ -56,8 +57,10 @@ else
     printf "\n[1 / 4] Looking for the latest $PROGRAM_NAME release.\n"
 fi
 
-# Build the binary name pattern
-BINARY_NAME="${PROGRAM_NAME}-${OS}-${ARCH}"
+# Releases publish a zip per target. Releases before 1.0.3 only have a bare
+# binary, so a tagged install of one of those falls back to it.
+ARCHIVE_NAME="${PROGRAM_NAME}-${OS}-${ARCH}.zip"
+LEGACY_NAME="${PROGRAM_NAME}-${OS}-${ARCH}"
 
 # Fetch release data from GitHub API
 if [ -n "$GITHUB_PAT" ]; then
@@ -91,20 +94,34 @@ fi
 
 echo "Found version $VERSION."
 
-# Extract the download URL
-DOWNLOAD_URL=""
-while IFS= read -r current_line; do
-    if [[ "$current_line" == *'"browser_download_url":'* ]]; then
-        if [[ "$current_line" == *"$BINARY_NAME"* ]]; then
-            DOWNLOAD_URL="${current_line#*\": \"}"
-            DOWNLOAD_URL="${DOWNLOAD_URL%%\"*}"
-            break
+# Prints the download URL of the asset with exactly the given name. The name is
+# compared with the end of the URL, since the legacy name is a prefix of the
+# archive name.
+find_download_url() {
+    local asset_name="$1"
+    local current_line url
+    while IFS= read -r current_line; do
+        if [[ "$current_line" == *'"browser_download_url":'* ]]; then
+            url="${current_line#*\": \"}"
+            url="${url%%\"*}"
+            if [[ "$url" == */"$asset_name" ]]; then
+                echo "$url"
+                return 0
+            fi
         fi
-    fi
-done <<< "$RELEASE_JSON_DATA"
+    done <<< "$RELEASE_JSON_DATA"
+    return 0
+}
+
+ASSET_NAME="$ARCHIVE_NAME"
+DOWNLOAD_URL="$(find_download_url "$ARCHIVE_NAME")"
+if [ -z "$DOWNLOAD_URL" ]; then
+    ASSET_NAME="$LEGACY_NAME"
+    DOWNLOAD_URL="$(find_download_url "$LEGACY_NAME")"
+fi
 
 if [ -z "$DOWNLOAD_URL" ]; then
-    echo "Failed to find the binary \"$BINARY_NAME\" in the release." >&2
+    echo "Failed to find \"$ARCHIVE_NAME\" or \"$LEGACY_NAME\" in the release." >&2
     exit 1
 fi
 
@@ -112,19 +129,39 @@ fi
 echo "[2 / 4] Creating installation directory."
 mkdir -p "$BIN_DIR"
 
-# Download the binary
-echo "[3 / 4] Downloading \"$BINARY_NAME\"."
+# Download the asset
+echo "[3 / 4] Downloading \"$ASSET_NAME\"."
 BIN_DEST="$BIN_DIR/$PROGRAM_NAME"
+DOWNLOAD_DEST="$BIN_DIR/.$PROGRAM_NAME-download"
 if [ -n "$GITHUB_PAT" ]; then
-    curl --proto '=https' --tlsv1.2 -L -o "$BIN_DEST" -sSf "$DOWNLOAD_URL" \
+    curl --proto '=https' --tlsv1.2 -L -o "$DOWNLOAD_DEST" -sSf "$DOWNLOAD_URL" \
         -H "Authorization: token $GITHUB_PAT"
 else
-    curl --proto '=https' --tlsv1.2 -L -o "$BIN_DEST" -sSf "$DOWNLOAD_URL"
+    curl --proto '=https' --tlsv1.2 -L -o "$DOWNLOAD_DEST" -sSf "$DOWNLOAD_URL"
+fi
+
+if [ ! -f "$DOWNLOAD_DEST" ] || [ ! -s "$DOWNLOAD_DEST" ]; then
+    echo "Failed to download \"$ASSET_NAME\"." >&2
+    rm -f "$DOWNLOAD_DEST"
+    exit 1
+fi
+
+if [ "$ASSET_NAME" = "$ARCHIVE_NAME" ]; then
+    # Remove the old binary first, so a failed extraction can't pass for a
+    # successful install.
+    rm -f "$BIN_DEST"
+    if ! unzip -o -q "$DOWNLOAD_DEST" -d "$BIN_DIR"; then
+        rm -f "$DOWNLOAD_DEST"
+        echo "Failed to extract \"$ASSET_NAME\"." >&2
+        exit 1
+    fi
+    rm -f "$DOWNLOAD_DEST"
+else
+    mv -f "$DOWNLOAD_DEST" "$BIN_DEST"
 fi
 
 if [ ! -f "$BIN_DEST" ] || [ ! -s "$BIN_DEST" ]; then
-    echo "Failed to download the binary." >&2
-    rm -f "$BIN_DEST"
+    echo "The download did not contain \"$PROGRAM_NAME\"." >&2
     exit 1
 fi
 chmod +x "$BIN_DEST"
@@ -178,12 +215,13 @@ else
         fi
     done
 
-    # If no config file found, create one
+    # If no config file found, create one. add_to_path returns 1 after adding
+    # the line, which would end the script under "set -e" without the "|| true".
     if [ ! -f "$HOME/.zshrc" ] && [ ! -f "$HOME/.bashrc" ] && [ ! -f "$HOME/.bash_profile" ]; then
         if [ "$(uname -s)" = "Darwin" ]; then
-            add_to_path ".zshrc"
+            add_to_path ".zshrc" || true
         else
-            add_to_path ".bashrc"
+            add_to_path ".bashrc" || true
         fi
     fi
 fi

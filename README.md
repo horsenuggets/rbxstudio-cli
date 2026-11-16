@@ -20,8 +20,11 @@ iwr "https://raw.githubusercontent.com/horsenuggets/rbxstudio-cli/main/Scripts/I
 
 ### Manual Install
 
-1. Download the appropriate binary from the [releases page](https://github.com/horsenuggets/rbxstudio-cli/releases)
+1. Download the archive for your platform from the [releases page](https://github.com/horsenuggets/rbxstudio-cli/releases)
 2. Run `rbxstudio install` to install to `~/.rbxstudio-cli/bin` and add to PATH
+
+Releases also work with [Rokit](https://github.com/rojo-rbx/rokit), which extracts the
+archive for you, so `rbxstudio` can be listed next to the other tools in a `rokit.toml`.
 
 ## Commands
 

@@ -34,6 +34,10 @@ jobs:
       - name: Build executable
         run: ./Scripts/BuildExecutable.exec.luau ${{ matrix.target }}
 
+      # Rokit extracts an archive and looks for a binary named after the tool, so
+      # each target publishes a zip containing "rbxstudio" or "rbxstudio.exe".
+      # The bare binary stays too, because the updater shipped in 1.0.2 only knows
+      # those names and would otherwise have nothing to download.
       - name: Rename binary
         run: |
           if [[ "${{ matrix.target }}" == windows-* ]]; then
@@ -41,6 +45,18 @@ jobs:
           else
             mv Build/rbxstudio Build/rbxstudio-${{ matrix.target }}
           fi
+
+      - name: Package archive
+        run: |
+          mkdir -p Build/package
+          if [[ "${{ matrix.target }}" == windows-* ]]; then
+            cp "Build/rbxstudio-${{ matrix.target }}.exe" Build/package/rbxstudio.exe
+          else
+            cp "Build/rbxstudio-${{ matrix.target }}" Build/package/rbxstudio
+            chmod +x Build/package/rbxstudio
+          fi
+          cd Build/package
+          zip -r "../rbxstudio-${{ matrix.target }}.zip" .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

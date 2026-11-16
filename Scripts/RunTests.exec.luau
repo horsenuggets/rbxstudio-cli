@@ -15,6 +15,7 @@ const Testable = require("@devpackages/Testable")
 const process = require("@lune/process")
 
 const TESTS = {
+    { Name = "CliReleaseTest", Func = require("../Tests/CliReleaseTest.spec") },
     { Name = "ExampleTest", Func = require("../Tests/ExampleTest.spec") },
     { Name = "LogHelpersTest", Func = require("../Tests/LogHelpersTest.spec") },
     { Name = "OpenCommandTest", Func = require("../Tests/OpenCommandTest.spec") },
