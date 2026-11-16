@@ -20,12 +20,26 @@ return function()
                 { "C:\\Users\\dev[1]", "'C:\\Users\\dev[1]'" },
                 { "$env:PATH", "'$env:PATH'" },
                 { "", "''" },
+                { "O\u{2019}Brien", "'O\u{2019}\u{2019}Brien'" },
+                { "\u{2018}a\u{2019}", "'\u{2018}\u{2018}a\u{2019}\u{2019}'" },
+                { "a\u{201A}b\u{201B}c", "'a\u{201A}\u{201A}b\u{201B}\u{201B}c'" },
             }
         do
             it(`should quote "{case[1]}"`, function()
                 expect(PowerShell.quote(case[1])).to.equal(case[2])
             end)
         end
+
+        -- PowerShell reads a doubled quote as one, so undoing the doubling inside
+        -- the outer quotes must give back exactly what went in.
+        it("should preserve every quote character through a round trip", function()
+            for _, character in { "'", "\u{2018}", "\u{2019}", "\u{201A}", "\u{201B}" } do
+                const value = `C:\\Users\\O{character}Brien{character}`
+                const quoted = PowerShell.quote(value)
+                const inner = string.sub(quoted, 2, -2)
+                expect((string.gsub(inner, character .. character, character))).to.equal(value)
+            end
+        end)
 
         it("should always produce an even number of quotes", function()
             for _, value in { "a", "'", "a'b'c", "'''" } do

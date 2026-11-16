@@ -7,6 +7,10 @@ paths under a user profile, so a name like "O'Brien" cannot break the command.
 
 --]]
 
+-- PowerShell ends a single-quoted string at any of these, not just the ASCII
+-- apostrophe, so the typographic ones need doubling too.
+const QUOTE_CHARACTERS = { "'", "\u{2018}", "\u{2019}", "\u{201A}", "\u{201B}" }
+
 const PowerShell = {}
 
 --[[
@@ -16,7 +20,11 @@ const PowerShell = {}
 function PowerShell.quote(value: string): string
     assert(type(value) == "string")
 
-    return `'{string.gsub(value, "'", "''")}'`
+    local escaped = value
+    for _, character in QUOTE_CHARACTERS do
+        escaped = string.gsub(escaped, character, character .. character)
+    end
+    return `'{escaped}'`
 end
 
 --[[
