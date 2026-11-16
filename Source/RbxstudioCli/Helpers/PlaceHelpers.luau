@@ -38,13 +38,9 @@ end
 function PlaceHelpers.getPlaceName(placeId: string): string?
     assert(type(placeId) == "string")
 
-    const ok, response = pcall(net.request, {
-        url = `https://games.roblox.com/v1/games/multiget-place-details?placeIds={placeId}`,
-        method = "GET",
-        headers = CookieHelpers.authHeaders(),
-    })
+    const response = CookieHelpers.get(`https://games.roblox.com/v1/games/multiget-place-details?placeIds={placeId}`)
 
-    if ok and response.ok then
+    if response and response.ok then
         const success, data = pcall(serde.decode, "json" :: "json", response.body)
         if success and type(data) == "table" and #data > 0 then
             return data[1].name

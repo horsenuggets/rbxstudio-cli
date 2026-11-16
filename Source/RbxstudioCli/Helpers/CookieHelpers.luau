@@ -5,11 +5,13 @@ CookieHelpers
 Retrieves the .ROBLOSECURITY cookie for authenticating with the Roblox API.
 Reads from a cached file first to avoid macOS Keychain password prompts,
 falling back to the Keychain on first use and caching the result for
-subsequent runs.
+subsequent runs. A cached cookie that Roblox rejects is dropped and read from
+the Keychain again.
 
 --]]
 
 const fs = require("@lune/fs")
+const net = require("@lune/net")
 const process = require("@lune/process")
 
 const IS_MACOS = process.os == "macos"
@@ -19,6 +21,7 @@ const COOKIE_PATH = HOME_DIR .. "/.rbxstudio-cli/.cookie"
 const CookieHelpers = {}
 
 local cachedCookie: string? = nil
+local cookieSource: "File" | "Keychain" | "None" = "None"
 
 -- Extracts the .ROBLOSECURITY cookie value from a macOS Keychain entry.
 -- The cookie is stored as a hex-encoded plist by Roblox Studio.
@@ -65,18 +68,37 @@ const function readFromFile(): string?
     return nil
 end
 
--- Saves the cookie to ~/.rbxstudio-cli/.cookie with restrictive permissions
+-- Saves the cookie to ~/.rbxstudio-cli/.cookie. The file is created empty with
+-- owner-only permissions first, so the secret is never readable by other users,
+-- and nothing is written if that fails.
 const function saveToFile(cookie: string)
     const dir = COOKIE_PATH:match("(.+)/[^/]+$")
     if dir and not fs.isDir(dir) then
         fs.writeDir(dir)
     end
 
-    fs.writeFile(COOKIE_PATH, cookie .. "\n")
-
-    if not (process.os == "windows") then
-        process.exec("chmod", { "600", COOKIE_PATH })
+    if process.os ~= "windows" then
+        -- A leftover file may have looser permissions, and chmod alone would
+        -- leave a window, so it is replaced rather than reused.
+        if fs.isFile(COOKIE_PATH) then
+            fs.removeFile(COOKIE_PATH)
+        end
+        const created = process.exec("sh", { "-c", 'umask 077 && : > "$1"', "sh", COOKIE_PATH })
+        if not created.ok then
+            return
+        end
     end
+
+    fs.writeFile(COOKIE_PATH, cookie .. "\n")
+end
+
+--[[
+    Decides whether a failed request is worth retrying with a fresh cookie. Only
+    a rejected cookie that came from the file cache can be stale, since one read
+    from the Keychain a moment ago is already the newest there is.
+]]
+function CookieHelpers.shouldRefresh(statusCode: number, cookieSource: "File" | "Keychain" | "None"): boolean
+    return statusCode == 401 and cookieSource == "File"
 end
 
 --[[
@@ -97,6 +119,7 @@ function CookieHelpers.getRobloxSecurity(): string?
     const fileCookie = readFromFile()
     if fileCookie then
         cachedCookie = fileCookie
+        cookieSource = "File"
         return cachedCookie
     end
 
@@ -104,11 +127,48 @@ function CookieHelpers.getRobloxSecurity(): string?
     const keychainCookie = readFromKeychain()
     if keychainCookie then
         cachedCookie = keychainCookie
+        cookieSource = "Keychain"
         saveToFile(keychainCookie)
         return cachedCookie
     end
 
     return nil
+end
+
+--[[
+    Drops the cached cookie from memory and disk, so the next lookup reads the
+    Keychain again. Used when Roblox rejects the cached cookie, which happens
+    after Studio rotates its session or the user switches accounts.
+]]
+function CookieHelpers.invalidate()
+    cachedCookie = nil
+    cookieSource = "None"
+    if fs.isFile(COOKIE_PATH) then
+        fs.removeFile(COOKIE_PATH)
+    end
+end
+
+--[[
+    Sends a GET request with the cookie attached. When Roblox rejects a cookie
+    that came from the file cache, the cache is dropped and the request is sent
+    once more with the Keychain's cookie. Returns nil if the request itself fails.
+]]
+function CookieHelpers.get(url: string): net.FetchResponse?
+    const function send(): net.FetchResponse?
+        const ok, response = pcall(net.request, {
+            url = url,
+            method = "GET",
+            headers = CookieHelpers.authHeaders(),
+        })
+        return if ok then response else nil
+    end
+
+    const response = send()
+    if response and CookieHelpers.shouldRefresh(response.statusCode, cookieSource) then
+        CookieHelpers.invalidate()
+        return send()
+    end
+    return response
 end
 
 --[[
