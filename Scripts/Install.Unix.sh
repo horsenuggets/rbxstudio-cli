@@ -215,12 +215,13 @@ else
         fi
     done
 
-    # If no config file found, create one
+    # If no config file found, create one. add_to_path returns 1 after adding
+    # the line, which would end the script under "set -e" without the "|| true".
     if [ ! -f "$HOME/.zshrc" ] && [ ! -f "$HOME/.bashrc" ] && [ ! -f "$HOME/.bash_profile" ]; then
         if [ "$(uname -s)" = "Darwin" ]; then
-            add_to_path ".zshrc"
+            add_to_path ".zshrc" || true
         else
-            add_to_path ".bashrc"
+            add_to_path ".bashrc" || true
         fi
     fi
 fi
