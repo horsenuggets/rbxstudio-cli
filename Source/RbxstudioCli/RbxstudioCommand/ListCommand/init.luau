@@ -10,11 +10,9 @@ names from the Roblox API for published places.
 
 const Colors = require("@rbxstudiocli/Helpers/Colors")
 const Commandline = require("@packages/Commandline")
-const CookieHelpers = require("@rbxstudiocli/Helpers/CookieHelpers")
+const PlaceHelpers = require("@rbxstudiocli/Helpers/PlaceHelpers")
 const fs = require("@lune/fs")
-const net = require("@lune/net")
 const process = require("@lune/process")
-const serde = require("@lune/serde")
 
 const LOG_DIR = (process.env.HOME or "") .. "/Library/Logs/Roblox"
 
@@ -29,24 +27,11 @@ const function getPlaceName(placeId: string): string?
         return placeNameCache[placeId]
     end
 
-    const ok, response = pcall(net.request, {
-        url = `https://games.roblox.com/v1/games/multiget-place-details?placeIds={placeId}`,
-        method = "GET",
-        headers = CookieHelpers.authHeaders(),
-    })
-
-    if ok and response.ok then
-        const success, data = pcall(serde.decode, "json" :: "json", response.body)
-        if success and type(data) == "table" and #data > 0 then
-            const name = data[1].name
-            if name then
-                placeNameCache[placeId] = name
-                return name
-            end
-        end
+    const name = PlaceHelpers.getPlaceName(placeId)
+    if name then
+        placeNameCache[placeId] = name
     end
-
-    return nil
+    return name
 end
 
 ------------------------------------------------------------------------------------------
