@@ -7,9 +7,9 @@ simplest launch mode and equivalent to double-clicking the Studio icon.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local Commandline = require("@packages/Commandline")
-local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const Commandline = require("@packages/Commandline")
+const StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
 
 return Commandline.Command.new({
     Name = "start",
@@ -25,8 +25,8 @@ return Commandline.Command.new({
         }),
     },
     Impl = function(_args, flags)
-        local details = {}
-        local studioArgs = {}
+        const details = {}
+        const studioArgs = {}
 
         if flags.noplugins and flags.noplugins.Value then
             table.insert(studioArgs, "-disableLoadUserPlugins")
@@ -38,7 +38,7 @@ return Commandline.Command.new({
             table.insert(details, "layout reset")
         end
 
-        local suffix = if #details > 0 then ` ({Colors.dim(table.concat(details, ", "))})` else ""
+        const suffix = if #details > 0 then ` ({Colors.dim(table.concat(details, ", "))})` else ""
         print(`Starting Roblox Studio{suffix}...`)
 
         StudioHelpers.launch(studioArgs)

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.3
+- Publish "rbxstudio-<target>.zip" next to each bare binary so Rokit can install the CLI
+- Download and extract the archive in the install scripts, "rbxstudio install", and "rbxstudio update"
+- Fall back to the bare binary for releases from before archives were published
+- Move zip extraction into ArchiveHelpers and share release downloads through CliRelease
+- Fix "rbxstudio update --version" ignoring the requested version
+- Create the cookie cache with owner-only permissions before writing to it
+- Refresh a cached cookie from the Keychain when Roblox rejects it
+- Fix Windows installs under profile folders with apostrophes or brackets in their names
+- Keep the installed binary when the Unix install script fails to extract an archive
+
 ## 1.0.2
 - Add one-liner install scripts for macOS, Linux, and Windows
 - Add test-install and test-install-scripts CI workflows

@@ -7,11 +7,11 @@ Launches Roblox Studio briefly to extract the API definitions.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local Commandline = require("@packages/Commandline")
-local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
-local fs = require("@lune/fs")
-local process = require("@lune/process")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const Commandline = require("@packages/Commandline")
+const StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
+const fs = require("@lune/fs")
+const process = require("@lune/process")
 
 return Commandline.Command.new({
     Name = "api",
@@ -33,16 +33,16 @@ return Commandline.Command.new({
         }),
     },
     Impl = function(args, flags)
-        local output = args.output
-        local force = flags.force and flags.force.Value
+        const output = args.output
+        const force = flags.force and flags.force.Value
 
         if fs.isFile(output) and not force then
             print(Colors.error(`File {Colors.bold(output)} already exists. Use --force to overwrite.`))
             process.exit(1)
         end
 
-        local outputDir = output:match("^(.*/)") or ""
-        local outputFile = output:match("([^/]+)$") or output
+        const outputDir = output:match("^(.*/)") or ""
+        const outputFile = output:match("([^/]+)$") or output
         print(`Dumping Luau API to {Colors.path(outputDir)}{Colors.projectName(outputFile)}...`)
 
         StudioHelpers.launch({
@@ -51,7 +51,7 @@ return Commandline.Command.new({
         }, true)
 
         -- Wait for the output file to appear
-        local timeout = 30
+        const timeout = 30
         local elapsed = 0
         while elapsed < timeout do
             if fs.isFile(output) then

@@ -9,21 +9,21 @@ with process arguments.
 
 --]]
 
-local process = require("@lune/process")
+const process = require("@lune/process")
 
-local Commandline = require("@packages/Commandline")
-local RbxstudioCommand = require("@rbxstudiocli/RbxstudioCommand")
+const Commandline = require("@packages/Commandline")
+const RbxstudioCommand = require("@rbxstudiocli/RbxstudioCommand")
 
-local CLEANUP_SCRIPT = debug.info(function() end, "s"):match("^(.*/)") .. "Cleanup.luau"
+const CLEANUP_SCRIPT = debug.info(function() end, "s"):match("^(.*/)") .. "Cleanup.luau"
 
-local function spawnCleanup()
+const function spawnCleanup()
     pcall(process.exec, "sh", {
         "-c",
         `lune run "{CLEANUP_SCRIPT}" &>/dev/null &`,
     }, { stdio = "none" })
 end
 
-local function rbxstudioCli()
+const function rbxstudioCli()
     spawnCleanup()
     Commandline.registerCommand(RbxstudioCommand)
     RbxstudioCommand:Execute(process.args)

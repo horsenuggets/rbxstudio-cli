@@ -10,32 +10,32 @@ the user's terminal.
 
 --]]
 
-local fs = require("@lune/fs")
-local process = require("@lune/process")
+const fs = require("@lune/fs")
+const process = require("@lune/process")
 
-local SEVEN_DAYS = 604800
+const SEVEN_DAYS = 604800
 
-local function cleanup()
-    local tempDir = `{process.env.HOME}/.rbxstudio-cli/temp`
+const function cleanup()
+    const tempDir = `{process.env.HOME}/.rbxstudio-cli/temp`
 
     if not fs.isDir(tempDir) then
         return
     end
 
-    local now = os.time()
-    local entries = fs.readDir(tempDir)
+    const now = os.time()
+    const entries = fs.readDir(tempDir)
 
     for _, entry in entries do
-        local entryPath = `{tempDir}/{entry}`
+        const entryPath = `{tempDir}/{entry}`
         if not fs.isDir(entryPath) then
             continue
         end
 
-        local createdPath = `{entryPath}/.created`
+        const createdPath = `{entryPath}/.created`
         local isOld = true
 
         if fs.isFile(createdPath) then
-            local timestamp = tonumber(fs.readFile(createdPath))
+            const timestamp = tonumber(fs.readFile(createdPath))
             if timestamp and (now - timestamp) < SEVEN_DAYS then
                 isOld = false
             end

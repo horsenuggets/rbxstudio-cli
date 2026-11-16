@@ -7,21 +7,16 @@ and managing Roblox Studio sessions.
 
 --]]
 
-local ApiCommand = require("@self/ApiCommand")
-local Commandline = require("@packages/Commandline")
-local KillCommand = require("@self/KillCommand")
-local ListCommand = require("@self/ListCommand")
-local NewCommand = require("@self/NewCommand")
-local OpenCommand = require("@self/OpenCommand")
-local StartCommand = require("@self/StartCommand")
-local __VERSION__ = require("@self/__VERSION__")
-
-local INSTALL_OPTIONS = {
-    Name = "rbxstudio",
-    InstallDir = ".rbxstudio-cli",
-    Version = __VERSION__,
-    Repository = "horsenuggets/rbxstudio-cli",
-}
+const ApiCommand = require("@self/ApiCommand")
+const Commandline = require("@packages/Commandline")
+const InstallCommand = require("@self/InstallCommand")
+const KillCommand = require("@self/KillCommand")
+const ListCommand = require("@self/ListCommand")
+const NewCommand = require("@self/NewCommand")
+const OpenCommand = require("@self/OpenCommand")
+const StartCommand = require("@self/StartCommand")
+const UpdateCommand = require("@self/UpdateCommand")
+const __VERSION__ = require("@self/__VERSION__")
 
 return Commandline.Command.new({
     Name = "rbxstudio",
@@ -29,12 +24,12 @@ return Commandline.Command.new({
     Version = __VERSION__,
     Subcommands = {
         ApiCommand,
-        Commandline.Toolkit.installCommand(INSTALL_OPTIONS),
+        InstallCommand,
         KillCommand,
         ListCommand,
         NewCommand,
         OpenCommand,
         StartCommand,
-        Commandline.Toolkit.updateCommand(INSTALL_OPTIONS),
+        UpdateCommand,
     },
 })

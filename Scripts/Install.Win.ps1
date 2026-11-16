@@ -83,33 +83,52 @@ try {
     $releaseVersion = $releaseInfo.tag_name
     Write-Host "Found version $releaseVersion."
 
-    # Find the download URL
-    $binaryName = "$PROGRAM_NAME-windows-$arch.exe"
+    # Releases publish a zip per target. Releases before 1.0.3 only have a bare
+    # binary, so a tagged install of one of those falls back to it.
+    $archiveName = "$PROGRAM_NAME-windows-$arch.zip"
+    $legacyName = "$PROGRAM_NAME-windows-$arch.exe"
 
-    $asset = $releaseInfo.assets | Where-Object { $_.name -eq $binaryName } | Select-Object -First 1
-
+    $asset = $releaseInfo.assets | Where-Object { $_.name -eq $archiveName } | Select-Object -First 1
+    $isArchive = [bool]$asset
     if (-not $asset) {
-        throw "Could not find the binary `"$binaryName`" in the release."
+        $asset = $releaseInfo.assets | Where-Object { $_.name -eq $legacyName } | Select-Object -First 1
     }
 
+    if (-not $asset) {
+        throw "Could not find `"$archiveName`" or `"$legacyName`" in the release."
+    }
+
+    $assetName = $asset.name
     $downloadUrl = $asset.browser_download_url
 
     # Create installation directory
     Write-Host "[2 / 4] Creating installation directory."
     New-Item -ItemType Directory -Force -Path $BIN_DIR | Out-Null
 
-    # Download the binary
-    Write-Host "[3 / 4] Downloading `"$binaryName`"."
+    # Download the asset
+    Write-Host "[3 / 4] Downloading `"$assetName`"."
+    $zipDest = "$BIN_DIR\.$PROGRAM_NAME-download.zip"
     $binDest = "$BIN_DIR\$PROGRAM_NAME.exe"
     try {
-        Invoke-WebRequest $downloadUrl -OutFile $binDest -ErrorAction Stop
+        if ($isArchive) {
+            Invoke-WebRequest $downloadUrl -OutFile $zipDest -ErrorAction Stop
+            # Without Stop, a failed extraction is non-terminating, and a binary
+            # left by an earlier install would pass for the new one. LiteralPath
+            # keeps brackets in a profile folder name from acting as wildcards.
+            Expand-Archive -LiteralPath $zipDest -DestinationPath $BIN_DIR -Force -ErrorAction Stop
+        } else {
+            Invoke-WebRequest $downloadUrl -OutFile $binDest -ErrorAction Stop
+        }
     }
     catch {
-        throw "Failed to download binary from $downloadUrl. $_"
+        throw "Failed to install `"$assetName`" from $downloadUrl. $_"
+    }
+    finally {
+        Remove-Item -Force -ErrorAction SilentlyContinue -LiteralPath $zipDest
     }
 
-    if (-not (Test-Path $binDest)) {
-        throw "Failed to download the binary."
+    if (-not (Test-Path -LiteralPath $binDest)) {
+        throw "Failed to install the binary."
     }
 
     # Configure PATH

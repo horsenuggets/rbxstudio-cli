@@ -8,10 +8,10 @@ enabled for Rojo connectivity.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local Commandline = require("@packages/Commandline")
-local ProjectHelpers = require("@rbxstudiocli/Helpers/ProjectHelpers")
-local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const Commandline = require("@packages/Commandline")
+const ProjectHelpers = require("@rbxstudiocli/Helpers/ProjectHelpers")
+const StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
 
 return Commandline.Command.new({
     Name = "new",
@@ -31,7 +31,7 @@ return Commandline.Command.new({
         }),
     },
     Impl = function(args, flags)
-        local name = args.name
+        const name = args.name
 
         if name then
             print(`Creating new place {Colors.dim(name)}...`)
@@ -39,9 +39,9 @@ return Commandline.Command.new({
             print("Creating new temporary place...")
         end
 
-        local placePath = ProjectHelpers.createTempPlace(name)
+        const placePath = ProjectHelpers.createTempPlace(name)
 
-        local studioArgs = {
+        const studioArgs = {
             "-task",
             "EditFile",
             "-localPlaceFile",

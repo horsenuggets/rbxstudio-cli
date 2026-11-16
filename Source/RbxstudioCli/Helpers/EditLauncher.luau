@@ -7,10 +7,10 @@ ID. Used by both EditCommand and OpenCommand.
 
 --]]
 
-local Colors = require("@rbxstudiocli/Helpers/Colors")
-local PlaceHelpers = require("@rbxstudiocli/Helpers/PlaceHelpers")
-local StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
-local process = require("@lune/process")
+const Colors = require("@rbxstudiocli/Helpers/Colors")
+const PlaceHelpers = require("@rbxstudiocli/Helpers/PlaceHelpers")
+const StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
+const process = require("@lune/process")
 
 export type Options = {
     PlaceId: string,
@@ -20,33 +20,33 @@ export type Options = {
     NoPlugins: boolean?,
 }
 
-local EditLauncher = {}
+const EditLauncher = {}
 
 function EditLauncher.launch(options: Options)
     assert(type(options) == "table")
     assert(type(options.PlaceId) == "string")
 
-    local placeId = options.PlaceId
-    local version = options.Version
-    local scriptPath = options.ScriptPath
-    local line = options.Line
+    const placeId = options.PlaceId
+    const version = options.Version
+    const scriptPath = options.ScriptPath
+    const line = options.Line
 
     -- Resolve universe ID from the Roblox API
-    local universeId = PlaceHelpers.getUniverseId(placeId)
+    const universeId = PlaceHelpers.getUniverseId(placeId)
     if not universeId then
         print(Colors.error(`Failed to resolve universe ID for place {Colors.bold(placeId)}.`))
         process.exit(1)
     end
 
-    local task = if version then "EditPlaceRevision" else "EditPlace"
+    const task = if version then "EditPlaceRevision" else "EditPlace"
 
-    local placeName = PlaceHelpers.getPlaceName(placeId)
+    const placeName = PlaceHelpers.getPlaceName(placeId)
     local placeDisplay = `place {Colors.numericId(placeId)}`
     if placeName then
         placeDisplay ..= ` ({Colors.projectName(placeName)})`
     end
 
-    local details = { placeDisplay }
+    const details = { placeDisplay }
     if version then
         table.insert(details, `version {Colors.dim(tostring(version))}`)
     end
@@ -60,7 +60,7 @@ function EditLauncher.launch(options: Options)
 
     print(`Opening {table.concat(details, ", ")}...`)
 
-    local studioArgs = {
+    const studioArgs = {
         "-task",
         task,
         "-placeId",

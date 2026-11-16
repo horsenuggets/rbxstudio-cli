@@ -9,28 +9,28 @@ start simultaneously.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
-local fs = require("@lune/fs")
-local process = require("@lune/process")
-local t = require("@packages/t")
+const Chalk = require("@packages/Chalk")
+const fs = require("@lune/fs")
+const process = require("@lune/process")
+const t = require("@packages/t")
 
-local STUDIO_PATHS = {
+const STUDIO_PATHS = {
     macos = "/Applications/RobloxStudio.app",
     windows = `{process.env.LOCALAPPDATA or ""}/Roblox/Versions`,
     linux = "/usr/bin/roblox-studio",
 }
 
-local LAUNCH_COOLDOWN = 5
-local LOCKFILE_DIR = `{process.env.HOME}/.rbxstudio-cli`
-local LOCKFILE_PATH = `{LOCKFILE_DIR}/last-launch`
+const LAUNCH_COOLDOWN = 5
+const LOCKFILE_DIR = `{process.env.HOME}/.rbxstudio-cli`
+const LOCKFILE_PATH = `{LOCKFILE_DIR}/last-launch`
 
-local StudioHelpers = {}
+const StudioHelpers = {}
 
 -- Finds the Studio binary path for the current platform
 function StudioHelpers.getStudioPath(): string
     if process.os == "macos" then
-        local appPath = STUDIO_PATHS.macos
-        local binaryPath = `{appPath}/Contents/MacOS/RobloxStudio`
+        const appPath = STUDIO_PATHS.macos
+        const binaryPath = `{appPath}/Contents/MacOS/RobloxStudio`
         if not fs.isFile(binaryPath) then
             print(Chalk.red("Roblox Studio not found at the expected path."))
             print(Chalk.dim(binaryPath))
@@ -40,10 +40,10 @@ function StudioHelpers.getStudioPath(): string
     elseif process.os == "windows" then
         -- Windows installs Studio in a versioned folder under
         -- %LOCALAPPDATA%/Roblox/Versions/<version>/RobloxStudioBeta.exe
-        local versionsDir = STUDIO_PATHS.windows
+        const versionsDir = STUDIO_PATHS.windows
         if fs.isDir(versionsDir) then
             for _, entry in fs.readDir(versionsDir) do
-                local candidate = `{versionsDir}/{entry}/RobloxStudioBeta.exe`
+                const candidate = `{versionsDir}/{entry}/RobloxStudioBeta.exe`
                 if fs.isFile(candidate) then
                     return candidate
                 end
@@ -54,7 +54,7 @@ function StudioHelpers.getStudioPath(): string
         process.exit(1)
         return "" -- unreachable, satisfies type checker
     else
-        local binaryPath = STUDIO_PATHS.linux
+        const binaryPath = STUDIO_PATHS.linux
         if not fs.isFile(binaryPath) then
             print(Chalk.red("Roblox Studio not found at the expected path."))
             print(Chalk.dim(binaryPath))
@@ -67,7 +67,7 @@ end
 -- Waits until the launch cooldown has elapsed since the last launch.
 -- Uses flock to serialize concurrent CLI invocations so only one
 -- Studio process starts at a time, preventing auth race conditions.
-local function waitForCooldown()
+const function waitForCooldown()
     if not fs.isDir(LOCKFILE_DIR) then
         fs.writeDir(LOCKFILE_DIR)
     end
@@ -76,12 +76,12 @@ local function waitForCooldown()
     -- script. mkdir fails if the directory already exists, so only
     -- one process acquires the lock at a time. Others spin until
     -- they can acquire it.
-    local lockDir = LOCKFILE_PATH .. ".lock"
-    local cooldown = tostring(LAUNCH_COOLDOWN)
+    const lockDir = LOCKFILE_PATH .. ".lock"
+    const cooldown = tostring(LAUNCH_COOLDOWN)
 
     -- Build the shell script with concatenation to avoid backtick
     -- interpolation issues with $ characters
-    local lines = {
+    const lines = {
         "while ! mkdir " .. '"' .. lockDir .. '"' .. " 2>/dev/null; do",
         "  sleep 0.1",
         "done",
@@ -98,11 +98,11 @@ local function waitForCooldown()
         'date +%s > "' .. LOCKFILE_PATH .. '"',
         'rmdir "' .. lockDir .. '"',
     }
-    local script = table.concat(lines, "\n")
+    const script = table.concat(lines, "\n")
 
-    local result = process.exec("sh", { "-c", script })
+    const result = process.exec("sh", { "-c", script })
     if result.ok and result.stdout:find("WAIT:") then
-        local remaining = result.stdout:match("WAIT:(%d+)")
+        const remaining = result.stdout:match("WAIT:(%d+)")
         if remaining then
             print(
                 Chalk.dim(
@@ -119,7 +119,7 @@ end
 function StudioHelpers.launch(args: { string }?, skipAuth: boolean?)
     assert(t.optional(t.array(t.string))(args))
 
-    local studioArgs = args or {}
+    const studioArgs = args or {}
 
     waitForCooldown()
 
@@ -127,8 +127,8 @@ function StudioHelpers.launch(args: { string }?, skipAuth: boolean?)
         -- Launch the binary directly via sh so each invocation gets its
         -- own process with the correct arguments. "open -a" ignores args
         -- when Studio is already running.
-        local studioPath = StudioHelpers.getStudioPath()
-        local quoted = { `"{studioPath}"` }
+        const studioPath = StudioHelpers.getStudioPath()
+        const quoted = { `"{studioPath}"` }
         for _, arg in studioArgs do
             table.insert(quoted, `"{arg}"`)
         end
@@ -138,16 +138,16 @@ function StudioHelpers.launch(args: { string }?, skipAuth: boolean?)
         }, { stdio = "none" })
     elseif process.os == "windows" then
         -- Use "start" via cmd to launch detached on Windows
-        local studioPath = StudioHelpers.getStudioPath()
-        local cmdArgs = { "/c", "start", '""', studioPath }
+        const studioPath = StudioHelpers.getStudioPath()
+        const cmdArgs = { "/c", "start", '""', studioPath }
         for _, arg in studioArgs do
             table.insert(cmdArgs, arg)
         end
         process.exec("cmd", cmdArgs, { stdio = "none" })
     else
         -- On Linux, background the process via sh
-        local studioPath = StudioHelpers.getStudioPath()
-        local shellArgs = { "-c", `"{studioPath}" {table.concat(studioArgs, " ")} &` }
+        const studioPath = StudioHelpers.getStudioPath()
+        const shellArgs = { "-c", `"{studioPath}" {table.concat(studioArgs, " ")} &` }
         process.exec("sh", shellArgs, { stdio = "none" })
     end
 
@@ -161,9 +161,9 @@ function StudioHelpers.launch(args: { string }?, skipAuth: boolean?)
     end
 end
 
-local AUTH_TIMEOUT = 120
-local AUTH_POLL_INTERVAL = 0.5
-local LOG_DIR = if process.env.HOME then process.env.HOME .. "/Library/Logs/Roblox" else ""
+const AUTH_TIMEOUT = 120
+const AUTH_POLL_INTERVAL = 0.5
+const LOG_DIR = if process.env.HOME then process.env.HOME .. "/Library/Logs/Roblox" else ""
 
 -- Finds the most recent Studio log file created after the given
 -- timestamp (unix seconds)
@@ -177,10 +177,10 @@ function StudioHelpers._findLatestLog(afterTime: number): string?
 
     for _, entry in fs.readDir(LOG_DIR) do
         if entry:match("Studio.*_last%.log$") then
-            local path = LOG_DIR .. "/" .. entry
-            local meta = fs.metadata(path)
+            const path = LOG_DIR .. "/" .. entry
+            const meta = fs.metadata(path)
             if meta and meta.createdAt then
-                local created = meta.createdAt.unixTimestampMillis / 1000
+                const created = meta.createdAt.unixTimestampMillis / 1000
                 if created > afterTime and created > latestTime then
                     latest = path
                     latestTime = created
@@ -196,14 +196,14 @@ end
 -- "Authenticated : YES" to confirm successful login. If the cookie
 -- fails, prompts the user to log in manually.
 function StudioHelpers._waitForAuth()
-    local launchTime = os.time() - 2
+    const launchTime = os.time() - 2
     local prompted = false
-    local startTime = os.time()
+    const startTime = os.time()
 
     while os.time() - startTime < AUTH_TIMEOUT do
-        local logPath = StudioHelpers._findLatestLog(launchTime)
+        const logPath = StudioHelpers._findLatestLog(launchTime)
         if logPath then
-            local content = fs.readFile(logPath)
+            const content = fs.readFile(logPath)
 
             if content:find("Authenticated : YES") then
                 if prompted then

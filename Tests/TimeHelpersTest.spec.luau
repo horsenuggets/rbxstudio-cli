@@ -6,7 +6,7 @@ Tests for the TimeHelpers module's uptime formatting.
 
 --]]
 
-local TimeHelpers = require("@rbxstudiocli/Helpers/TimeHelpers")
+const TimeHelpers = require("@rbxstudiocli/Helpers/TimeHelpers")
 
 return function()
     describe("formatUptime", function()

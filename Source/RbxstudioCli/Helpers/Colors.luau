@@ -7,9 +7,9 @@ Wraps Chalk with meaningful names so output styling is centralized.
 
 --]]
 
-local Chalk = require("@packages/Chalk")
+const Chalk = require("@packages/Chalk")
 
-local Colors = {}
+const Colors = {}
 
 -- Text emphasis
 Colors.bold = Chalk.bold
