@@ -7,6 +7,8 @@ Tests for project creation helpers.
 --]]
 
 const ProjectHelpers = require("@rbxstudiocli/Helpers/ProjectHelpers")
+const Testable = require("@devpackages/Testable")
+const describe, expect, it = Testable.describe, Testable.expect, Testable.it
 
 return function()
     describe("generateHexId", function()

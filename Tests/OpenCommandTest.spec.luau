@@ -6,7 +6,9 @@ Tests for the open command's target classification logic.
 
 --]]
 
+const Testable = require("@devpackages/Testable")
 const classifyTarget = require("@rbxstudiocli/RbxstudioCommand/OpenCommand/classifyTarget")
+const describe, expect, it = Testable.describe, Testable.expect, Testable.it
 
 return function()
     describe("classifyTarget", function()

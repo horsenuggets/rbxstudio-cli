@@ -7,6 +7,8 @@ Tests for log parsing and session state detection.
 --]]
 
 const LogHelpers = require("@rbxstudiocli/Helpers/LogHelpers")
+const Testable = require("@devpackages/Testable")
+const describe, expect, it = Testable.describe, Testable.expect, Testable.it
 
 return function()
     describe("parseSessionInfo", function()

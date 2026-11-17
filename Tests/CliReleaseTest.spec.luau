@@ -8,6 +8,8 @@ installed binary is found, without touching the network or the filesystem.
 --]]
 
 const CliRelease = require("@rbxstudiocli/Helpers/CliRelease")
+const Testable = require("@devpackages/Testable")
+const describe, expect, it = Testable.describe, Testable.expect, Testable.it
 
 const ARCHIVE = "rbxstudio-macos-aarch64.zip"
 const BINARY = "rbxstudio-macos-aarch64"
