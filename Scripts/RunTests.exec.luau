@@ -28,6 +28,8 @@ const TESTS = {
 const RunTests = {}
 
 function RunTests.exec()
+    Testable.configure({ InjectGlobals = false })
+
     const filterName = process.args[1]
     local testsToRun = TESTS
 

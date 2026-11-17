@@ -8,6 +8,8 @@ combination of response status and where the cookie came from.
 --]]
 
 const CookieHelpers = require("@rbxstudiocli/Helpers/CookieHelpers")
+const Testable = require("@devpackages/Testable")
+const describe, expect, it = Testable.describe, Testable.expect, Testable.it
 
 return function()
     describe("shouldRefresh", function()

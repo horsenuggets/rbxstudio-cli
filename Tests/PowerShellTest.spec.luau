@@ -9,6 +9,8 @@ quoting, the archive extraction command, and the user PATH command.
 
 const ArchiveHelpers = require("@rbxstudiocli/Helpers/ArchiveHelpers")
 const PowerShell = require("@rbxstudiocli/Helpers/PowerShell")
+const Testable = require("@devpackages/Testable")
+const describe, expect, it = Testable.describe, Testable.expect, Testable.it
 
 return function()
     describe("quote", function()
