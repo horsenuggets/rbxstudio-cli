@@ -11,6 +11,7 @@ bare binary, so those still install directly.
 
 const ArchiveHelpers = require("./ArchiveHelpers")
 const Commandline = require("@packages/Commandline")
+const PlatformHelpers = require("./PlatformHelpers")
 const fs = require("@lune/fs")
 const net = require("@lune/net")
 const process = require("@lune/process")
@@ -91,7 +92,8 @@ function CliRelease.getRelease(targetVersion: string?): Release?
         table.insert(assetNames, asset.name)
     end
 
-    const assetName, isArchive = CliRelease.selectAsset(assetNames, SelfUpdate.getPlatformSuffix(), EXECUTABLE_SUFFIX)
+    const platformSuffix = PlatformHelpers.getReleaseSuffix(SelfUpdate.getPlatformSuffix())
+    const assetName, isArchive = CliRelease.selectAsset(assetNames, platformSuffix, EXECUTABLE_SUFFIX)
     for _, asset in assets do
         if asset.name == assetName then
             return {
