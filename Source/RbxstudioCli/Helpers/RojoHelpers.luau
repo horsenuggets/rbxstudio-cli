@@ -62,6 +62,29 @@ function RojoHelpers.resolveRojo(): string
 end
 
 --[[
+    Returns the Rojo version without a leading "v" prefix.
+
+    Options:
+    > version - Rojo version, with or without a leading "v"
+]]
+function RojoHelpers.stripVersionPrefix(version: string): string
+    return if string.sub(version, 1, 1) == "v" then string.sub(version, 2) else version
+end
+
+--[[
+    Returns the release tags to try for a Rojo version, in order. Releases from
+    7.7.1-horse.2.7 onward are tagged without a "v" prefix while older ones kept it, so
+    both forms are tried to support any pinned version.
+
+    Options:
+    > version - Rojo version, with or without a leading "v"
+]]
+function RojoHelpers.getReleaseTags(version: string): { string }
+    const bareVersion = RojoHelpers.stripVersionPrefix(version)
+    return { bareVersion, `v{bareVersion}` }
+end
+
+--[[
     Downloads and installs the Rojo binary from GitHub releases.
 
     Fetches the release matching the given version tag, finds the
@@ -70,19 +93,24 @@ end
 
     Options:
     > binDir - Directory to install the Rojo binary into
-    > version - Version tag to download (e.g., "7.7.0-rc.1-horse.0.7")
+    > version - Version to download (e.g., "7.7.1-horse.2.9")
 ]]
 function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
-    const tag = if string.sub(version, 1, 1) == "v" then version else `v{version}`
-    const url = `https://api.github.com/repos/{ROJO_REPOSITORY}/releases/tags/{tag}`
+    local response = nil
+    for _, tag in RojoHelpers.getReleaseTags(version) do
+        const ok, result = pcall(net.request, {
+            url = `https://api.github.com/repos/{ROJO_REPOSITORY}/releases/tags/{tag}`,
+            method = "GET",
+            headers = { ["User-Agent"] = "rbxstudio" },
+        })
 
-    const ok, response = pcall(net.request, {
-        url = url,
-        method = "GET",
-        headers = { ["User-Agent"] = "rbxstudio" },
-    })
+        if ok and result.ok then
+            response = result
+            break
+        end
+    end
 
-    if not ok or not response.ok then
+    if not response then
         print(Chalk.yellow("Failed to fetch Rojo release."))
         return false
     end
@@ -95,7 +123,7 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
 
     -- Find the matching platform asset (zipped)
     const platformSuffix = SelfUpdate.getPlatformSuffix()
-    const assetName = `rojo-{version}-{platformSuffix}.zip`
+    const assetName = `rojo-{RojoHelpers.stripVersionPrefix(version)}-{platformSuffix}.zip`
     local downloadUrl: string? = nil
 
     for _, asset in release.assets or {} do
