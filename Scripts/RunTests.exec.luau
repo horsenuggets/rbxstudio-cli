@@ -22,6 +22,7 @@ const TESTS = {
     { Name = "OpenCommandTest", Func = require("../Tests/OpenCommandTest.spec") },
     { Name = "PowerShellTest", Func = require("../Tests/PowerShellTest.spec") },
     { Name = "ProjectHelpersTest", Func = require("../Tests/ProjectHelpersTest.spec") },
+    { Name = "RojoHelpersTest", Func = require("../Tests/RojoHelpersTest.spec") },
     { Name = "TimeHelpersTest", Func = require("../Tests/TimeHelpersTest.spec") },
 }
 
