@@ -11,10 +11,12 @@ from GitHub releases.
 const ArchiveHelpers = require("./ArchiveHelpers")
 const Chalk = require("@packages/Chalk")
 const Commandline = require("@packages/Commandline")
+const PlatformHelpers = require("./PlatformHelpers")
 const fs = require("@lune/fs")
 const net = require("@lune/net")
 const process = require("@lune/process")
 const serde = require("@lune/serde")
+const t = require("@packages/t")
 
 const SelfUpdate = Commandline.Toolkit._SelfUpdate
 
@@ -85,6 +87,22 @@ function RojoHelpers.getReleaseTags(version: string): { string }
 end
 
 --[[
+    Returns the name of the zipped Rojo release asset for a version and platform, using
+    the architecture names Rojo publishes (e.g., "rojo-7.7.1-horse.2.9-macos-aarch64.zip").
+
+    Options:
+    > version - Rojo version, with or without a leading "v"
+    > platformSuffix - Platform suffix such as "macos-arm64" or "linux-x64"
+]]
+function RojoHelpers.getAssetName(version: string, platformSuffix: string): string
+    assert(t.string(version))
+    assert(t.string(platformSuffix))
+
+    const bareVersion = RojoHelpers.stripVersionPrefix(version)
+    return `rojo-{bareVersion}-{PlatformHelpers.getReleaseSuffix(platformSuffix)}.zip`
+end
+
+--[[
     Downloads and installs the Rojo binary from GitHub releases.
 
     Fetches the release matching the given version tag, finds the
@@ -122,8 +140,7 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
     end
 
     -- Find the matching platform asset (zipped)
-    const platformSuffix = SelfUpdate.getPlatformSuffix()
-    const assetName = `rojo-{RojoHelpers.stripVersionPrefix(version)}-{platformSuffix}.zip`
+    const assetName = RojoHelpers.getAssetName(version, SelfUpdate.getPlatformSuffix())
     local downloadUrl: string? = nil
 
     for _, asset in release.assets or {} do
