@@ -10,6 +10,7 @@ start simultaneously.
 --]]
 
 const Chalk = require("@packages/Chalk")
+const Commandline = require("@packages/Commandline")
 const fs = require("@lune/fs")
 const process = require("@lune/process")
 const t = require("@packages/t")
@@ -152,7 +153,8 @@ function StudioHelpers.launch(args: { string }?, skipAuth: boolean?)
     end
 
     if not skipAuth then
-        print(Chalk.greenBright("Roblox Studio launched."))
+        const terminal = Commandline.Terminal.default()
+        terminal:Print(terminal:Success("Roblox Studio launched."))
 
         -- Poll Studio logs to verify authentication
         if process.os == "macos" then
