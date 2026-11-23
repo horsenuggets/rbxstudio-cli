@@ -27,15 +27,19 @@ const LOCKFILE_PATH = `{LOCKFILE_DIR}/last-launch`
 
 const StudioHelpers = {}
 
+const function notFound(path: string, directory: boolean)
+    const terminal = Commandline.Terminal.default()
+    terminal:Print(terminal:Error(`Roblox Studio not found in {terminal:Path(path, { Directory = directory })}.`))
+    process.exit(1)
+end
+
 -- Finds the Studio binary path for the current platform
 function StudioHelpers.getStudioPath(): string
     if process.os == "macos" then
         const appPath = STUDIO_PATHS.macos
         const binaryPath = `{appPath}/Contents/MacOS/RobloxStudio`
         if not fs.isFile(binaryPath) then
-            print(Chalk.red("Roblox Studio not found at the expected path."))
-            print(Chalk.dim(binaryPath))
-            process.exit(1)
+            notFound(binaryPath, false)
         end
         return binaryPath
     elseif process.os == "windows" then
@@ -50,16 +54,12 @@ function StudioHelpers.getStudioPath(): string
                 end
             end
         end
-        print(Chalk.red("Roblox Studio not found."))
-        print(Chalk.dim(versionsDir))
-        process.exit(1)
+        notFound(versionsDir, true)
         return "" -- unreachable, satisfies type checker
     else
         const binaryPath = STUDIO_PATHS.linux
         if not fs.isFile(binaryPath) then
-            print(Chalk.red("Roblox Studio not found at the expected path."))
-            print(Chalk.dim(binaryPath))
-            process.exit(1)
+            notFound(binaryPath, false)
         end
         return binaryPath
     end
@@ -105,10 +105,8 @@ const function waitForCooldown()
     if result.ok and result.stdout:find("WAIT:") then
         const remaining = result.stdout:match("WAIT:(%d+)")
         if remaining then
-            print(
-                Chalk.dim(
-                    `Waited {remaining} {if remaining == "1" then "second" else "seconds"} for previous Studio launch.`
-                )
+            Commandline.Terminal.default():Print(
+                `Waited {remaining} {if remaining == "1" then "second" else "seconds"} for the previous Studio launch.`
             )
         end
     end
