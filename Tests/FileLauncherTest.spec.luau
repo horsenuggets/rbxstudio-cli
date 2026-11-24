@@ -16,7 +16,7 @@ return function()
         it("should name only the file on every platform", function()
             const terminal = Commandline.Terminal.new({ Color = false, Env = {} })
             const cases = {
-                { "/tmp/ae/AnimeExpeditionsLiveEdit.52876.rbxl", "AnimeExpeditionsLiveEdit.52876.rbxl" },
+                { "/tmp/game/LiveEdit.52876.rbxl", "LiveEdit.52876.rbxl" },
                 { "C:\\Users\\user\\AppData\\Local\\Temp\\Place.rbxl", "Place.rbxl" },
                 { "default.project.json", "default.project.json" },
                 { "/tmp/My Place.rbxlx", "My·Place.rbxlx" },
