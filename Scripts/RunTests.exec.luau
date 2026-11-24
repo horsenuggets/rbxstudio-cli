@@ -20,14 +20,18 @@ const TESTS = {
     { Name = "ExampleTest", Func = require("../Tests/ExampleTest.spec") },
     { Name = "LogHelpersTest", Func = require("../Tests/LogHelpersTest.spec") },
     { Name = "OpenCommandTest", Func = require("../Tests/OpenCommandTest.spec") },
+    { Name = "PlatformHelpersTest", Func = require("../Tests/PlatformHelpersTest.spec") },
     { Name = "PowerShellTest", Func = require("../Tests/PowerShellTest.spec") },
     { Name = "ProjectHelpersTest", Func = require("../Tests/ProjectHelpersTest.spec") },
+    { Name = "RojoHelpersTest", Func = require("../Tests/RojoHelpersTest.spec") },
     { Name = "TimeHelpersTest", Func = require("../Tests/TimeHelpersTest.spec") },
 }
 
 const RunTests = {}
 
 function RunTests.exec()
+    Testable.configure({ InjectGlobals = false })
+
     const filterName = process.args[1]
     local testsToRun = TESTS
 

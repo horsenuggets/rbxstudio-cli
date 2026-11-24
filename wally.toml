@@ -1,7 +1,7 @@
 [package]
 name = "horsenuggets/rbxstudio-cli"
 description = "A feature-rich CLI for launching Roblox Studio with various configurations."
-version = "1.0.3"
+version = "1.0.4"
 private = true
 license = "MIT"
 realm = "shared"
@@ -20,8 +20,8 @@ exclude = ["**"]
 
 [dependencies]
 Chalk = "horsenuggets/chalk-luau@1.0.2"
-Commandline = "horsenuggets/commandline-luau@0.2.4"
+Commandline = "horsenuggets/commandline-luau@0.2.7"
 t = "horsenuggets/t@3.1.1-horse.0.5"
 
 [dev-dependencies]
-Testable = "horsenuggets/testable@1.1.5"
+Testable = "horsenuggets/testable@1.3.0"

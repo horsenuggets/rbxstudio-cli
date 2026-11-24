@@ -8,16 +8,29 @@ project. Used by both FileCommand and OpenCommand.
 --]]
 
 const Colors = require("@rbxstudiocli/Helpers/Colors")
+const Commandline = require("@packages/Commandline")
 const StudioHelpers = require("@rbxstudiocli/Helpers/StudioHelpers")
 const fs = require("@lune/fs")
 const process = require("@lune/process")
+const t = require("@packages/t")
 
 export type Options = {
     Path: string,
     NoPlugins: boolean?,
 }
 
+type Terminal = typeof(Commandline.Terminal.default())
+
 const FileLauncher = {}
+
+-- Names the file being opened. Only the file name is shown, whichever slash style the
+-- path uses, and it always takes the Roblox path style.
+function FileLauncher.openingMessage(terminal: Terminal, filePath: string): string
+    assert(t.table(terminal))
+    assert(t.string(filePath))
+
+    return `Opening {terminal:RobloxPath(Commandline.Path.fileName(filePath))}...`
+end
 
 function FileLauncher.launch(options: Options)
     assert(type(options) == "table")
@@ -38,8 +51,8 @@ function FileLauncher.launch(options: Options)
         process.exit(1)
     end
 
-    const fileName = filePath:match("([^/]+)$") or filePath
-    print(`Opening {Colors.projectName(fileName)}...`)
+    const terminal = Commandline.Terminal.default()
+    terminal:Print(FileLauncher.openingMessage(terminal, filePath))
 
     const studioArgs = { "-task", "EditFile" }
 
