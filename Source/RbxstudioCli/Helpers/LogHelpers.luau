@@ -13,7 +13,7 @@ const LogHelpers = {}
 export type SessionInfo = {
     Status: string,
     PlaceId: string?,
-    Highlight: string?,
+    Highlight: string?
 }
 
 -- Parses log content to determine what Studio is doing. Scans for
@@ -90,7 +90,7 @@ function LogHelpers.parseSessionInfo(content: string, getPlaceNameFn: ((string) 
         return {
             Status = if name then `{prefix} ({name})` else prefix,
             PlaceId = id,
-            Highlight = name,
+            Highlight = name
         }
     end
 

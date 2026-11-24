@@ -119,7 +119,7 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
         const ok, result = pcall(net.request, {
             url = `https://api.github.com/repos/{ROJO_REPOSITORY}/releases/tags/{tag}`,
             method = "GET",
-            headers = { ["User-Agent"] = "rbxstudio" },
+            headers = { ["User-Agent"] = "rbxstudio" }
         })
 
         if ok and result.ok then
@@ -159,7 +159,7 @@ function RojoHelpers.downloadRojo(binDir: string, version: string): boolean
     const dlOk, dlResponse = pcall(net.request, {
         url = downloadUrl,
         method = "GET",
-        headers = { ["User-Agent"] = "rbxstudio" },
+        headers = { ["User-Agent"] = "rbxstudio" }
     })
 
     if not dlOk or not dlResponse.ok then

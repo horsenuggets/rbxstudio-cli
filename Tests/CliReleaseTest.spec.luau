@@ -24,7 +24,7 @@ const PUBLISHED_ARCHIVES = {
     "rbxstudio-macos-aarch64.zip",
     "rbxstudio-macos-x86_64.zip",
     "rbxstudio-windows-aarch64.zip",
-    "rbxstudio-windows-x86_64.zip",
+    "rbxstudio-windows-x86_64.zip"
 }
 
 return function()
@@ -88,7 +88,7 @@ return function()
                 { "/home/a/.rbxstudio-cli/bin/rbxstudio", "/home/a/.rbxstudio-cli/bin" },
                 { "C:\\Users\\a\\.rbxstudio-cli\\bin\\rbxstudio.exe", "C:\\Users\\a\\.rbxstudio-cli\\bin" },
                 { "C:/Users/a\\bin/rbxstudio.exe", "C:/Users/a\\bin" },
-                { "rbxstudio", "." },
+                { "rbxstudio", "." }
             }
         do
             it(`should find the folder holding "{case[1]}"`, function()

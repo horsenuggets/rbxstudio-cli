@@ -19,7 +19,7 @@ const ARCHITECTURES = {
     { Input = "aarch64", Published = "aarch64" },
     { Input = "arm64", Published = "aarch64" },
     { Input = "x64", Published = "x86_64" },
-    { Input = "x86_64", Published = "x86_64" },
+    { Input = "x86_64", Published = "x86_64" }
 }
 const OPERATING_SYSTEMS = { "linux", "macos", "windows" }
 

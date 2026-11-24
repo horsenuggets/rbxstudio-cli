@@ -21,7 +21,7 @@ type MockEntry = {
     Pid: string,
     PlaceId: string?,
     Status: string,
-    Uptime: string,
+    Uptime: string
 }
 
 const MOCK_DATA: { MockEntry } = {
@@ -32,7 +32,7 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "05:30",
         PlaceId = nil,
         Status = "Edit (temp-a1b2c3d4.rbxl)",
-        Highlight = "temp-a1b2c3d4.rbxl",
+        Highlight = "temp-a1b2c3d4.rbxl"
     },
     {
         Pid = "10003",
@@ -40,7 +40,7 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "12:45",
         PlaceId = "13435539729",
         Status = "Team Create (Plugin Sandbox)",
-        Highlight = "Plugin Sandbox",
+        Highlight = "Plugin Sandbox"
     },
     {
         Pid = "10004",
@@ -48,7 +48,7 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "01:30:00",
         PlaceId = "85939162614693",
         Status = "Edit (test game :))",
-        Highlight = "test game :)",
+        Highlight = "test game :)"
     },
     {
         Pid = "10005",
@@ -56,7 +56,7 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "02:15:30",
         PlaceId = "9430488623",
         Status = "Edit (My Obby)",
-        Highlight = "My Obby",
+        Highlight = "My Obby"
     },
     {
         Pid = "10006",
@@ -64,7 +64,7 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "03:45:12",
         PlaceId = nil,
         Status = "Edit (New place)",
-        Highlight = nil,
+        Highlight = nil
     },
     {
         Pid = "10007",
@@ -72,7 +72,7 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "05:00:00",
         PlaceId = "1234567890",
         Status = "Edit (Big RPG World)",
-        Highlight = "Big RPG World",
+        Highlight = "Big RPG World"
     },
     {
         Pid = "10008",
@@ -80,7 +80,7 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "1-02:30:15",
         PlaceId = "9876543210",
         Status = "Team Create (Massive Game)",
-        Highlight = "Massive Game",
+        Highlight = "Massive Game"
     },
     {
         Pid = "10009",
@@ -88,7 +88,7 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "2-12:00:00",
         PlaceId = "5555555555",
         Status = "Edit (Memory Hog)",
-        Highlight = "Memory Hog",
+        Highlight = "Memory Hog"
     },
     {
         Pid = "10010",
@@ -96,8 +96,8 @@ const MOCK_DATA: { MockEntry } = {
         Uptime = "3-06:45:30",
         PlaceId = "1111111111",
         Status = "Edit (Leaking Place)",
-        Highlight = "Leaking Place",
-    },
+        Highlight = "Leaking Place"
+    }
 }
 
 const DemoList = {}
@@ -123,15 +123,15 @@ function DemoList.exec()
                 rawMem,
                 rawUptime,
                 rawPlaceId,
-                entry.Status,
+                entry.Status
             },
             Colored = {
                 entry.Pid,
                 coloredMem,
                 coloredUptime,
                 coloredPlaceId,
-                coloredStatus,
-            },
+                coloredStatus
+            }
         })
     end
 

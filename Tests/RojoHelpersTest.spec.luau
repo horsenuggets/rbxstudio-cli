@@ -20,7 +20,7 @@ const PUBLISHED_ASSETS = {
     "rojo-7.7.1-horse.2.9-macos-aarch64.zip",
     "rojo-7.7.1-horse.2.9-macos-x86_64.zip",
     "rojo-7.7.1-horse.2.9-windows-aarch64.zip",
-    "rojo-7.7.1-horse.2.9-windows-x86_64.zip",
+    "rojo-7.7.1-horse.2.9-windows-x86_64.zip"
 }
 
 return function()

@@ -13,7 +13,7 @@ const t = require("@packages/t")
 
 const RELEASE_ARCHITECTURES = {
     arm64 = "aarch64",
-    x64 = "x86_64",
+    x64 = "x86_64"
 }
 
 const PlatformHelpers = {}

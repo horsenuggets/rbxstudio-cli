@@ -24,7 +24,7 @@ return function()
                 { "", "''" },
                 { "O\u{2019}Brien", "'O\u{2019}\u{2019}Brien'" },
                 { "\u{2018}a\u{2019}", "'\u{2018}\u{2018}a\u{2019}\u{2019}'" },
-                { "a\u{201A}b\u{201B}c", "'a\u{201A}\u{201A}b\u{201B}\u{201B}c'" },
+                { "a\u{201A}b\u{201B}c", "'a\u{201A}\u{201A}b\u{201B}\u{201B}c'" }
             }
         do
             it(`should quote "{case[1]}"`, function()

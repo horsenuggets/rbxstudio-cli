@@ -11,7 +11,7 @@ const fs = require("@lune/fs")
 
 export type Classification = {
     Type: "placeid" | "file",
-    Value: string,
+    Value: string
 }
 
 const function classifyTarget(target: string): (Classification?, string?)

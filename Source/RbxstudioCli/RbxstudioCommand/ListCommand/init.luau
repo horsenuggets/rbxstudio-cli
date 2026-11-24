@@ -73,7 +73,7 @@ type StudioProcess = {
     uptime: string,
     uptimeRaw: string,
     logPath: string?,
-    session: SessionInfo?,
+    session: SessionInfo?
 }
 
 return Commandline.Command.new({
@@ -110,7 +110,7 @@ return Commandline.Command.new({
                     uptime = coloredUptime,
                     uptimeRaw = rawUptime,
                     logPath = nil,
-                    session = nil,
+                    session = nil
                 })
             end
         end
@@ -169,15 +169,15 @@ return Commandline.Command.new({
                     studio.memoryRaw,
                     studio.uptimeRaw,
                     rawPlaceId,
-                    session.Status,
+                    session.Status
                 },
                 Colored = {
                     studio.pid,
                     studio.memory,
                     studio.uptime,
                     coloredPlaceId,
-                    coloredStatus,
-                },
+                    coloredStatus
+                }
             })
         end
 
@@ -190,5 +190,5 @@ return Commandline.Command.new({
         )
         print()
         TableHelpers.render({ "Process ID", "Memory", "Uptime", "Place ID", "Status" }, rows)
-    end,
+    end
 })

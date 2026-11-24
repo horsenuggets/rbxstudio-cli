@@ -27,7 +27,7 @@ const GenerateVersion = {}
 function GenerateVersion.exec()
     Toolkit.generateVersion({
         VersionFile = "VERSION",
-        OutputPath = "Source/RbxstudioCli/RbxstudioCommand/__VERSION__.luau",
+        OutputPath = "Source/RbxstudioCli/RbxstudioCommand/__VERSION__.luau"
     })
 
     -- Generate Rojo version module from rokit.toml

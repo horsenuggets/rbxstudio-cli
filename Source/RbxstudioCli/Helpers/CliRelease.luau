@@ -31,7 +31,7 @@ export type Release = {
     -- Archives need extracting; a legacy bare binary is written straight out.
     IsArchive: boolean,
     Version: string,
-    DownloadUrl: string,
+    DownloadUrl: string
 }
 
 --[[
@@ -75,7 +75,7 @@ function CliRelease.getRelease(targetVersion: string?): Release?
     const ok, response = pcall(net.request, {
         url = url,
         method = "GET",
-        headers = { ["User-Agent"] = NAME },
+        headers = { ["User-Agent"] = NAME }
     })
     if not ok or not response.ok then
         return nil
@@ -99,7 +99,7 @@ function CliRelease.getRelease(targetVersion: string?): Release?
             return {
                 IsArchive = isArchive,
                 Version = data.tag_name,
-                DownloadUrl = asset.browser_download_url,
+                DownloadUrl = asset.browser_download_url
             }
         end
     end
@@ -115,7 +115,7 @@ function CliRelease.install(release: Release, destPath: string): boolean
     const ok, response = pcall(net.request, {
         url = release.DownloadUrl,
         method = "GET",
-        headers = { ["User-Agent"] = NAME },
+        headers = { ["User-Agent"] = NAME }
     })
     if not ok or not response.ok then
         return false
@@ -124,7 +124,7 @@ function CliRelease.install(release: Release, destPath: string): boolean
     if not release.IsArchive then
         SelfUpdate.replaceBinary({
             targetPath = destPath,
-            newContents = response.body,
+            newContents = response.body
         })
         return true
     end
@@ -152,7 +152,7 @@ function CliRelease.install(release: Release, destPath: string): boolean
 
     SelfUpdate.replaceBinary({
         targetPath = destPath,
-        newContents = contents,
+        newContents = contents
     })
     return true
 end

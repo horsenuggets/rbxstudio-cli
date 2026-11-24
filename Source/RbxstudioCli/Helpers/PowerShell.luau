@@ -39,7 +39,7 @@ function PowerShell.addToUserPathCommand(directory: string): string
         `$d = {PowerShell.quote(directory)};`,
         "$p = [Environment]::GetEnvironmentVariable('PATH', 'User');",
         "if (-not $p -or -not $p.ToLower().Contains($d.ToLower()))",
-        "{ [Environment]::SetEnvironmentVariable('PATH', $d + ';' + $p, 'User') }",
+        "{ [Environment]::SetEnvironmentVariable('PATH', $d + ';' + $p, 'User') }"
     }, " ")
 end
 

@@ -19,7 +19,7 @@ return function()
                 { "/tmp/game/LiveEdit.52876.rbxl", "LiveEdit.52876.rbxl" },
                 { "C:\\Users\\user\\AppData\\Local\\Temp\\Place.rbxl", "Place.rbxl" },
                 { "default.project.json", "default.project.json" },
-                { "/tmp/My Place.rbxlx", "My·Place.rbxlx" },
+                { "/tmp/My Place.rbxlx", "My·Place.rbxlx" }
             }
             for _, case in cases do
                 expect(FileLauncher.openingMessage(terminal, case[1])).to.equal(`Opening {case[2]}...`)

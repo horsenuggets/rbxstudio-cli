@@ -17,12 +17,12 @@ return Commandline.Command.new({
     Flags = {
         Commandline.Flag.new({
             Name = "noplugins",
-            Description = "Disable loading user plugins on startup.",
+            Description = "Disable loading user plugins on startup."
         }),
         Commandline.Flag.new({
             Name = "reset",
-            Description = "Reset Studio layout and dock settings.",
-        }),
+            Description = "Reset Studio layout and dock settings."
+        })
     },
     Impl = function(_args, flags)
         const details = {}
@@ -42,5 +42,5 @@ return Commandline.Command.new({
         print(`Starting Roblox Studio{suffix}...`)
 
         StudioHelpers.launch(studioArgs)
-    end,
+    end
 })

@@ -34,43 +34,43 @@ const TEMPLATE_PROJECT = {
         HttpService = {
             ["$className"] = "HttpService",
             ["$properties"] = {
-                HttpEnabled = true,
-            },
+                HttpEnabled = true
+            }
         },
         Lighting = {
             ["$className"] = "Lighting",
             ["$properties"] = {
-                Technology = "ShadowMap",
-            },
+                Technology = "ShadowMap"
+            }
         },
         ReplicatedFirst = {
-            ["$className"] = "ReplicatedFirst",
+            ["$className"] = "ReplicatedFirst"
         },
         ReplicatedStorage = {
-            ["$className"] = "ReplicatedStorage",
+            ["$className"] = "ReplicatedStorage"
         },
         ServerScriptService = {
-            ["$className"] = "ServerScriptService",
+            ["$className"] = "ServerScriptService"
         },
         ServerStorage = {
-            ["$className"] = "ServerStorage",
+            ["$className"] = "ServerStorage"
         },
         SoundService = {
-            ["$className"] = "SoundService",
+            ["$className"] = "SoundService"
         },
         StarterGui = {
-            ["$className"] = "StarterGui",
+            ["$className"] = "StarterGui"
         },
         StarterPack = {
-            ["$className"] = "StarterPack",
+            ["$className"] = "StarterPack"
         },
         StarterPlayer = {
-            ["$className"] = "StarterPlayer",
+            ["$className"] = "StarterPlayer"
         },
         Workspace = {
-            ["$className"] = "Workspace",
-        },
-    },
+            ["$className"] = "Workspace"
+        }
+    }
 }
 
 -- Generates a short random hex ID (8 hex characters)
@@ -119,7 +119,7 @@ function ProjectHelpers.createTempPlace(name: string?): string
         "build",
         projectPath,
         "--output",
-        outputPath,
+        outputPath
     })
 
     if not result.ok then

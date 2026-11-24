@@ -28,7 +28,7 @@ function BuildExecutable.exec()
     Toolkit.build({
         Name = "rbxstudio",
         EntryPoint = "Source/RbxstudioCli",
-        Target = process.args[1],
+        Target = process.args[1]
     })
 end
 

@@ -19,7 +19,7 @@ const CLEANUP_SCRIPT = debug.info(function() end, "s"):match("^(.*/)") .. "Clean
 const function spawnCleanup()
     pcall(process.exec, "sh", {
         "-c",
-        `lune run "{CLEANUP_SCRIPT}" &>/dev/null &`,
+        `lune run "{CLEANUP_SCRIPT}" &>/dev/null &`
     }, { stdio = "none" })
 end
 

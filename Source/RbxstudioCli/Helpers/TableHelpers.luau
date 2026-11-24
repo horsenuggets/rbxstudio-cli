@@ -13,7 +13,7 @@ const TableHelpers = {}
 
 export type TableRow = {
     Raw: { string },
-    Colored: { string },
+    Colored: { string }
 }
 
 function TableHelpers.render(headers: { string }, rows: { TableRow })

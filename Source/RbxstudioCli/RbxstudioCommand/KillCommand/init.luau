@@ -32,8 +32,8 @@ return Commandline.Command.new({
             Name = "pid",
             Description = 'PID of the Studio process to kill, or "all" to kill all.',
             Type = "string",
-            Required = false,
-        }),
+            Required = false
+        })
     },
     Impl = function(args, _flags)
         const target = args.pid
@@ -60,5 +60,5 @@ return Commandline.Command.new({
             process.exec("kill", { "-9", target }, { stdio = "none" })
             print(`Killed Roblox Studio process {Colors.count(target)}.`)
         end
-    end,
+    end
 })

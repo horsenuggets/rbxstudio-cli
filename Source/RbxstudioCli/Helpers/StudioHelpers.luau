@@ -18,7 +18,7 @@ const t = require("@packages/t")
 const STUDIO_PATHS = {
     macos = "/Applications/RobloxStudio.app",
     windows = `{process.env.LOCALAPPDATA or ""}/Roblox/Versions`,
-    linux = "/usr/bin/roblox-studio",
+    linux = "/usr/bin/roblox-studio"
 }
 
 const LAUNCH_COOLDOWN = 5
@@ -97,7 +97,7 @@ const function waitForCooldown()
         "  fi",
         "fi",
         'date +%s > "' .. LOCKFILE_PATH .. '"',
-        'rmdir "' .. lockDir .. '"',
+        'rmdir "' .. lockDir .. '"'
     }
     const script = table.concat(lines, "\n")
 
@@ -133,7 +133,7 @@ function StudioHelpers.launch(args: { string }?, skipAuth: boolean?)
         end
         process.exec("sh", {
             "-c",
-            `{table.concat(quoted, " ")} &>/dev/null &`,
+            `{table.concat(quoted, " ")} &>/dev/null &`
         }, { stdio = "none" })
     elseif process.os == "windows" then
         -- Use "start" via cmd to launch detached on Windows

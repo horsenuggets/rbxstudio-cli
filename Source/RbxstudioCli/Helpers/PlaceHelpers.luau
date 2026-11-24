@@ -19,7 +19,7 @@ function PlaceHelpers.getUniverseId(placeId: string): string?
 
     const ok, response = pcall(net.request, {
         url = `https://apis.roblox.com/universes/v1/places/{placeId}/universe`,
-        method = "GET",
+        method = "GET"
     })
 
     if ok and response.ok then

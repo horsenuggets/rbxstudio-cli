@@ -20,8 +20,8 @@ return Commandline.Command.new({
         Commandline.Flag.new({
             Name = "force",
             Shorthand = "f",
-            Description = "Overwrite the output file if it already exists.",
-        }),
+            Description = "Overwrite the output file if it already exists."
+        })
     },
     Args = {
         Commandline.Arg.new({
@@ -29,8 +29,8 @@ return Commandline.Command.new({
             Description = "Output file path for the API dump.",
             Type = "string",
             Required = false,
-            Default = "api-dump.json",
-        }),
+            Default = "api-dump.json"
+        })
     },
     Impl = function(args, flags)
         const output = args.output
@@ -47,7 +47,7 @@ return Commandline.Command.new({
 
         StudioHelpers.launch({
             "-API",
-            output,
+            output
         }, true)
 
         -- Wait for the output file to appear
@@ -64,5 +64,5 @@ return Commandline.Command.new({
 
         print(Colors.error(`API dump timed out after {timeout} {if timeout == 1 then "second" else "seconds"}.`))
         process.exit(1)
-    end,
+    end
 })
