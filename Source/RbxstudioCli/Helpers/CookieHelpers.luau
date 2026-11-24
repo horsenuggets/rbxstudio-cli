@@ -34,7 +34,7 @@ const function readFromKeychain(): string?
         "find-generic-password",
         "-a",
         "https://www.roblox.com/:SharedROBLOSECURITYForStudio",
-        "-w",
+        "-w"
     })
 
     if not result.ok then
@@ -43,7 +43,7 @@ const function readFromKeychain(): string?
 
     const hexResult = process.exec("sh", {
         "-c",
-        "echo '" .. result.stdout:gsub("%s+", "") .. "' | xxd -r -p | plutil -convert xml1 -o - -",
+        "echo '" .. result.stdout:gsub("%s+", "") .. "' | xxd -r -p | plutil -convert xml1 -o - -"
     })
 
     if not hexResult.ok then
@@ -87,7 +87,7 @@ const function saveToFile(cookie: string)
     end
 
     process.exec("sh", { "-c", SAVE_SCRIPT, "sh", COOKIE_PATH }, {
-        stdio = { stdin = cookie .. "\n" },
+        stdio = { stdin = cookie .. "\n" }
     })
 end
 
@@ -157,7 +157,7 @@ function CookieHelpers.get(url: string): net.FetchResponse?
         const ok, response = pcall(net.request, {
             url = url,
             method = "GET",
-            headers = CookieHelpers.authHeaders(),
+            headers = CookieHelpers.authHeaders()
         })
         return if ok then response else nil
     end

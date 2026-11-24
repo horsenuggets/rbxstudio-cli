@@ -19,7 +19,7 @@ const InstallCompletions = {}
 function InstallCompletions.exec()
     Commandline.Toolkit.installCompletions({
         Command = RbxstudioCommand,
-        Shell = process.args[1] or "zsh",
+        Shell = process.args[1] or "zsh"
     })
 end
 

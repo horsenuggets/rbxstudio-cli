@@ -17,7 +17,7 @@ export type Options = {
     Version: string?,
     ScriptPath: string?,
     Line: number?,
-    NoPlugins: boolean?,
+    NoPlugins: boolean?
 }
 
 const EditLauncher = {}
@@ -66,7 +66,7 @@ function EditLauncher.launch(options: Options)
         "-placeId",
         placeId,
         "-universeId",
-        universeId,
+        universeId
     }
 
     if version then

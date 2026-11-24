@@ -29,8 +29,8 @@ return Commandline.Command.new({
             Name = "version",
             Shorthand = "v",
             Description = "Install a specific version instead of the latest.",
-            Type = "string",
-        }),
+            Type = "string"
+        })
     },
     Impl = function(_args, flags)
         const targetVersion: string? = flags.version and flags.version.Value
@@ -94,5 +94,5 @@ return Commandline.Command.new({
         else
             print(Chalk.yellow("Rojo update failed. You can still use a system-installed Rojo."))
         end
-    end,
+    end
 })

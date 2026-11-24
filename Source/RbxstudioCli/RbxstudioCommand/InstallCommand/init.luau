@@ -33,7 +33,7 @@ const PATH_EXPORT_LINE = `export PATH="{BIN_DIR}:$PATH"`
 const SHELL_CONFIGS = {
     { file = ".bash_profile", shell = "bash" },
     { file = ".bashrc", shell = "bash" },
-    { file = ".zshrc", shell = "zsh" },
+    { file = ".zshrc", shell = "zsh" }
 }
 const XSH_PATH_FILE = HOME_DIR .. "/.path"
 
@@ -136,5 +136,5 @@ return Commandline.Command.new({
         print()
         print(Chalk.bold(Chalk.greenBright("Installation complete!")))
         print(Chalk.yellow("Restart your terminal for PATH changes to take effect."))
-    end,
+    end
 })

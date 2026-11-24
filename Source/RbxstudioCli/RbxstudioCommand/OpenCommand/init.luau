@@ -22,32 +22,32 @@ return Commandline.Command.new({
         Commandline.Arg.new({
             Name = "target",
             Description = "A file path or place ID.",
-            Type = "string",
-        }),
+            Type = "string"
+        })
     },
     Flags = {
         Commandline.Flag.new({
             Name = "noplugins",
-            Description = "Disable loading user plugins on startup.",
+            Description = "Disable loading user plugins on startup."
         }),
         Commandline.Flag.new({
             Name = "version",
             Shorthand = "v",
             Description = "Open a specific place version (revision).",
-            Type = "string",
+            Type = "string"
         }),
         Commandline.Flag.new({
             Name = "script",
             Shorthand = "s",
             Description = "Script path to open (require-by-string format).",
-            Type = "string",
+            Type = "string"
         }),
         Commandline.Flag.new({
             Name = "line",
             Shorthand = "l",
             Description = "Line number to navigate to in the script.",
-            Type = "int",
-        }),
+            Type = "int"
+        })
     },
     Impl = function(args, flags)
         const target = args.target
@@ -65,13 +65,13 @@ return Commandline.Command.new({
                 Version = flags.version and flags.version.Value,
                 ScriptPath = flags.script and flags.script.Value,
                 Line = flags.line and flags.line.Value,
-                NoPlugins = noPlugins,
+                NoPlugins = noPlugins
             })
         else
             FileLauncher.launch({
                 Path = classification.Value,
-                NoPlugins = noPlugins,
+                NoPlugins = noPlugins
             })
         end
-    end,
+    end
 })

@@ -21,14 +21,14 @@ return Commandline.Command.new({
             Name = "name",
             Description = "Name for the temporary place. If omitted, a random name is generated.",
             Type = "string",
-            Required = false,
-        }),
+            Required = false
+        })
     },
     Flags = {
         Commandline.Flag.new({
             Name = "noplugins",
-            Description = "Disable loading user plugins on startup.",
-        }),
+            Description = "Disable loading user plugins on startup."
+        })
     },
     Impl = function(args, flags)
         const name = args.name
@@ -45,7 +45,7 @@ return Commandline.Command.new({
             "-task",
             "EditFile",
             "-localPlaceFile",
-            placePath,
+            placePath
         }
 
         if flags.noplugins and flags.noplugins.Value then
@@ -53,5 +53,5 @@ return Commandline.Command.new({
         end
 
         StudioHelpers.launch(studioArgs)
-    end,
+    end
 })

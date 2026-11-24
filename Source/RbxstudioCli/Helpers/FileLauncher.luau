@@ -16,7 +16,7 @@ const t = require("@packages/t")
 
 export type Options = {
     Path: string,
-    NoPlugins: boolean?,
+    NoPlugins: boolean?
 }
 
 type Terminal = typeof(Commandline.Terminal.default())

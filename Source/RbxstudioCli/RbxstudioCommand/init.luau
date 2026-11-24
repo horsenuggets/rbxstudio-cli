@@ -30,6 +30,6 @@ return Commandline.Command.new({
         NewCommand,
         OpenCommand,
         StartCommand,
-        UpdateCommand,
-    },
+        UpdateCommand
+    }
 })

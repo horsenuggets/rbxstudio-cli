@@ -32,7 +32,7 @@ function ArchiveHelpers.extractZip(zipPath: string, destDir: string): boolean
     const result = if IS_WINDOWS
         then process.exec("powershell", {
             "-Command",
-            ArchiveHelpers.expandArchiveCommand(zipPath, destDir),
+            ArchiveHelpers.expandArchiveCommand(zipPath, destDir)
         })
         else process.exec("unzip", { "-o", zipPath, "-d", destDir })
     return result.ok
