@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.4
+- Printed place-opening and launch-success messages through the shared terminal palette.
+- Normalized displayed place names across Windows and Unix path separators.
+- Used readable shared styles for Studio lookup failures and launch cooldown messages.
+- Updated the shared terminal dependency for configurable themes, timestamps, and wrapping.
+
 ## 1.0.3
 - Publish "rbxstudio-<target>.zip" next to each bare binary so Rokit can install the CLI
 - Download and extract the archive in the install scripts, "rbxstudio install", and "rbxstudio update"
